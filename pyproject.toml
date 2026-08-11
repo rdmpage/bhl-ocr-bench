@@ -1,0 +1,29 @@
+[project]
+name = "bhl-ocr-bench"
+version = "0.1.0"
+description = "Producer adapters that feed OCR engines into the pinned finebooks/bhl-ocr-eval scorer."
+requires-python = ">=3.10"
+dependencies = [
+    "datasets>=3",
+    "huggingface-hub>=0.28",
+    "pandas",
+    "pyarrow",
+    "pillow",
+    "pytesseract",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+# Reproducibility: pin the index and a fixed resolution cutoff so every machine locks identically,
+# matching the harness's own policy. Bump deliberately when newer deps are wanted.
+[tool.uv]
+exclude-newer = "2026-08-01T00:00:00Z"
+
+[[tool.uv.index]]
+url = "https://pypi.org/simple"
+default = true
+
+[tool.pytest.ini_options]
+pythonpath = ["producers"]
+testpaths = ["tests"]

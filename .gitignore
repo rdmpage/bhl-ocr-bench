@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.DS_Store
+
+# Run artifacts: raw OCR parquets, per-page checkpoints, scorecards. Large, regenerable, and
+# reproducible from the pinned dataset revision + the provenance files that DO ship.
+runs/
+scorecards/
+
+# The locally rebuilt scoring GT. Regenerate with `uv run benchmark/build_benchmark.py` — it is a
+# deterministic function of the pinned source dataset revision, so it is evidence, not source.
+benchmark/gt/

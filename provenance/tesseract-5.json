@@ -1,0 +1,27 @@
+{
+  "dataset": "finebooks/bhl-impact-gt",
+  "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+  "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+  "language_map": {
+    "birdsofgreatbrit02butl": "eng",
+    "conchologiaiconi05reev": "eng",
+    "daschitinskelett00prel": "deu",
+    "histoirenaturell10cuvi": "fra",
+    "pisciumquerelaee00sche": "lat",
+    "trudyrusskagoent161881russ": "deu+fra"
+  },
+  "language_packs": {
+    "available": 126,
+    "missing": []
+  },
+  "model": "tesseract-5",
+  "note": "model-native OCR mode",
+  "omp_thread_limit": 1,
+  "platform": "Darwin arm64 (homebrew tesseract, CPU)",
+  "postproc_version": "0",
+  "postprocessing": "none \u2014 tesseract-5 is absent from the harness normalize_outputs REGISTRY, so the published row was scored on raw image_to_string output",
+  "producer": "bhl-ocr-bench producers/tesseract5.py",
+  "prompt": null,
+  "tesseract_version": "5.5.2",
+  "workers": 7
+}
