@@ -1,0 +1,26 @@
+{
+  "dataset": "finebooks/bhl-impact-gt",
+  "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+  "endpoint": "https://www.datalab.to/api/v1/convert",
+  "endpoint_note": "bespoke multipart /api/v1/convert with asynchronous polling; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+  "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+  "model": "datalab-balanced",
+  "note": "model-native OCR mode",
+  "postproc_version": "0",
+  "postprocessing": "none \u2014 raw markdown as returned",
+  "producer": "bhl-ocr-bench producers/datalab.py",
+  "prompt": null,
+  "provenance_caveat": "Hosted API row. RESULTS.md 'What counts as a score' requires self-run inference under a pinned image and model revision; a hosted endpoint cannot attest serving configuration or quantization. Any `served_versions` above is what the API volunteered, not a pin.",
+  "request_settings": {
+    "max_attempts": 6,
+    "mode": "balanced",
+    "output_format": "markdown",
+    "paginate": false,
+    "poll_timeout_s": 600.0,
+    "rpm_cap": 190,
+    "timeout_s": 120.0,
+    "workers": 12
+  },
+  "served_versions": null,
+  "wall_clock_s": 2083.1
+}

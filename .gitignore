@@ -12,3 +12,7 @@ scorecards/
 # The locally rebuilt scoring GT. Regenerate with `uv run benchmark/build_benchmark.py` — it is a
 # deterministic function of the pinned source dataset revision, so it is evidence, not source.
 benchmark/gt/
+
+# Clearly-labelled what-if diagnostics. Deliberately NOT under scorecards/, so they can never be
+# picked up by the leaderboard glob and become a board row.
+diagnostics/

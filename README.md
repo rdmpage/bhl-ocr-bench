@@ -132,6 +132,41 @@ PaddleOCR-VL-1.6 (6.47% loop) is scored with 6.47% of its hardest pages removed.
 row conservative relative to those, not flattered by them — but the two numbers are not
 like-for-like, and the difference is a measurement artefact, not a quality finding.
 
+### datalab-balanced
+
+    export DATALAB_API_KEY=...            # or write it to ~/.config/datalab/api_key
+    uv run producers/datalab.py --limit 5 --out runs/datalab-smoke/run.parquet
+    uv run producers/datalab.py --mode balanced --workers 12 --rpm 190 \
+        --out runs/datalab-balanced/run.parquet
+
+Bespoke multipart `/api/v1/convert`, **asynchronous** (submit returns a `request_check_url` to
+poll), so `run_openai.py` cannot drive it. Two undocumented details cost a smoke run to find:
+the endpoint validates the upload's declared **MIME type** (WebP posted as
+`application/octet-stream` is rejected as "Invalid file type"), and the completed result carries
+the text in `markdown` while volunteering no `versions` object — so this row cannot even report
+which build served it.
+
+Rate limits are tiered and **polls count toward them**: free tier is 10 req/min (≈8 hours for the
+corpus at ~2.8 requests/page), Team is 200/min (≈45 minutes). `--rpm` throttles client-side.
+
+**Its headline is dominated by image captioning, not reading.** Datalab emits AI-generated image
+*descriptions* as markdown alt text — `![A scientific plate showing 42 numbered eggs of various
+bird species, arranged in a 7x6 grid…](…)` — averaging 135 characters across 1,287 placeholders,
+4.5% of all output. The frozen reading normalizer already strips markdown pipes, headings, bold,
+LaTeX and a fixed HTML tag vocabulary, but `![…](…)` alt text is prose and survives, so it is
+scored as transcription. Stripping just those placeholders moves content CER from **0.1375 to
+0.0919** and the headline from 0.1692 to 0.1144, with recall unchanged at 0.9691 — see
+`diagnostics/` (deliberately outside the `scorecards/` glob, so it can never enter the board).
+
+The board row stays raw, because correcting it properly means registering a transform in
+`normalize_outputs.py` inside the read-only harness. That is the same policy-vs-accuracy confound
+DESIGN.md describes for furniture: this row measures what the product emits, which is not the same
+question as how well it reads.
+
+Note also its furniture policy is the opposite of Mistral's: page_header evidence 0.23 and
+page_footer 0.12 (vs Mistral v3's 0.90/0.65), i.e. it is a clean-reading engine that drops running
+heads and page numbers. Per DESIGN.md that is policy, not quality.
+
 ## After any change
 
     uv run pytest                            # this repo's producer tests

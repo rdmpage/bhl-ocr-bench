@@ -42,6 +42,43 @@
     "page_set_fingerprint": "411a92e4a0e490711dff5875f75363255f2279232c0635fdb162ba4b199da9fd",
     "page_count": 2165,
     "run_by_model": {
+      "datalab-balanced": {
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "endpoint": "https://www.datalab.to/api/v1/convert",
+        "endpoint_note": "bespoke multipart /api/v1/convert with asynchronous polling; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "model": "datalab-balanced",
+        "note": "model-native OCR mode",
+        "postproc_version": "0",
+        "postprocessing": "none \u2014 raw markdown as returned",
+        "producer": "bhl-ocr-bench producers/datalab.py",
+        "prompt": null,
+        "provenance_caveat": "Hosted API row. RESULTS.md 'What counts as a score' requires self-run inference under a pinned image and model revision; a hosted endpoint cannot attest serving configuration or quantization. Any `served_versions` above is what the API volunteered, not a pin.",
+        "request_settings": {
+          "max_attempts": 6,
+          "mode": "balanced",
+          "output_format": "markdown",
+          "paginate": false,
+          "poll_timeout_s": 600.0,
+          "rpm_cap": 190,
+          "timeout_s": 120.0,
+          "workers": 12
+        },
+        "served_versions": null,
+        "wall_clock_s": 2083.1,
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/datalab-balanced/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "8ecbfaec9f7d2417be7260f7126c10a745ece3cbdb0a81af1b3a10ebccfe631f"
+        }
+      },
       "mistral-ocr-2512": {
         "api_model_requested": "mistral-ocr-2512",
         "dataset": "finebooks/bhl-impact-gt",
@@ -147,6 +184,105 @@
     }
   },
   "scorecards": {
+    "datalab-balanced": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.207,
+      "cer_reading_micro": 0.1692,
+      "cer_ci": [
+        0.0602,
+        0.2882
+      ],
+      "cer_reading_median": 0.0059,
+      "recall_micro": 0.9685,
+      "recall_matched": 479322,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.1432,
+      "over_extraction_extra": 80218,
+      "over_extraction_output": 560021,
+      "script_match": 0.9995,
+      "furniture_global_token_recall_micro": 0.1978,
+      "furniture_global_token_recall_matched": 952,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.1286,
+        "conchologiaiconi05reev": 0.3558,
+        "daschitinskelett00prel": 0.0839,
+        "histoirenaturell10cuvi": 0.0231,
+        "pisciumquerelaee00sche": 0.3961,
+        "trudyrusskagoent161881russ": 0.0976
+      },
+      "by_script": {
+        "latin": 0.9995
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.1375,
+          "recall_micro": 0.9691,
+          "recall_matched": 479038,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.1176,
+          "over_extraction_extra": 63865,
+          "over_extraction_output": 543282
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 33.5831,
+          "recall_micro": 0.4814,
+          "recall_matched": 284,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.9769,
+          "over_extraction_extra": 16353,
+          "over_extraction_output": 16739
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.8529,
+          "matched": 1994,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.9863,
+          "matched": 8227,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.1154,
+          "matched": 142,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.2261,
+          "matched": 810,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.9407,
+          "matched": 10108,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9694,
+          "matched": 459051,
+          "reference": 473553
+        }
+      }
+    },
     "mistral-ocr-2512": {
       "n": 2165,
       "submitted": 2165,
@@ -448,11 +584,13 @@
   "order": [
     "mistral-ocr-2512",
     "tesseract-5",
+    "datalab-balanced",
     "mistral-ocr-4-1"
   ],
   "eligible_order": [
     "mistral-ocr-2512",
     "tesseract-5",
+    "datalab-balanced",
     "mistral-ocr-4-1"
   ],
   "ineligible_order": []
