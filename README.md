@@ -113,6 +113,16 @@ alias you sent back at you rather than the version it resolved to, so a run made
 cannot say afterwards what actually produced it. The producer verifies `--model` against
 `/v1/models` before spending anything and aborts with the list of available OCR models.
 
+**v4 regressed badly on blank pages; v3 did not.** On the 50 blank pages where v4-1 produced most
+output, under an identical request shape, v4-1 emitted 520,997 characters (median 1,841/page) and
+leaked what reads as its own annotation rubric ("According to Rule 2 (UNDERSCORE & LINE RULES)") on
+16 of them; `mistral-ocr-3` emitted 2,783 characters total (median 1/page) and leaked on none. This
+is a model regression, not a pipeline artefact — the same adapter, the same images, the same request.
+The independently-run NHM scorecard (`mistral-ocr-2512-cleaned`, same page-set fingerprint
+`411a92e4a0e4`) reports sparse CER 1.93, consistent with v3 simply not having the defect. Note their
+row is additionally `-cleaned`, so it is not raw output either. **If you want a usable Mistral row on
+a corpus containing plates and blanks, use v3.**
+
 **Read its Loop % as "unknown", not "zero".** The board's loop rate comes from a generating model
 reporting `finish_reason == "length"`. `/v1/ocr` reports no such thing, so a repetition loop is
 indistinguishable from a long transcription and the row shows 0.00. This engine demonstrably does
