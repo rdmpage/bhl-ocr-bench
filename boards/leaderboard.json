@@ -42,6 +42,38 @@
     "page_set_fingerprint": "411a92e4a0e490711dff5875f75363255f2279232c0635fdb162ba4b199da9fd",
     "page_count": 2165,
     "run_by_model": {
+      "mistral-ocr-2512": {
+        "api_model_requested": "mistral-ocr-2512",
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "endpoint": "https://api.mistral.ai/v1/ocr",
+        "endpoint_note": "bespoke /v1/ocr returning structured JSON; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "model": "mistral-ocr-2512",
+        "note": "model-native OCR mode",
+        "postproc_version": "0",
+        "postprocessing": "none \u2014 raw pages[].markdown as returned",
+        "producer": "bhl-ocr-bench producers/mistral_ocr.py",
+        "prompt": null,
+        "request_settings": {
+          "include_image_base64": false,
+          "max_attempts": 8,
+          "timeout_s": 120.0,
+          "workers": 2
+        },
+        "wall_clock_s": 5.5,
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/mistral-ocr-2512/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "b0abb743b962ef881ff2385d457dd6c8235792519ab6766e1c0f6254497f8330"
+        }
+      },
       "mistral-ocr-4-1": {
         "api_model_requested": "mistral-ocr-4-1",
         "dataset": "finebooks/bhl-impact-gt",
@@ -115,6 +147,105 @@
     }
   },
   "scorecards": {
+    "mistral-ocr-2512": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.0862,
+      "cer_reading_micro": 0.0593,
+      "cer_ci": [
+        0.0377,
+        0.0731
+      ],
+      "cer_reading_median": 0.0177,
+      "recall_micro": 0.9631,
+      "recall_matched": 476630,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.0494,
+      "over_extraction_extra": 25015,
+      "over_extraction_output": 505929,
+      "script_match": 0.998,
+      "furniture_global_token_recall_micro": 0.8329,
+      "furniture_global_token_recall_matched": 4008,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.0484,
+        "conchologiaiconi05reev": 0.0767,
+        "daschitinskelett00prel": 0.0211,
+        "histoirenaturell10cuvi": 0.0345,
+        "pisciumquerelaee00sche": 0.1317,
+        "trudyrusskagoent161881russ": 0.0705
+      },
+      "by_script": {
+        "latin": 0.998
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.0564,
+          "recall_micro": 0.9634,
+          "recall_matched": 476230,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.0465,
+          "over_extraction_extra": 23447,
+          "over_extraction_output": 503825
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 3.097,
+          "recall_micro": 0.678,
+          "recall_matched": 400,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.7452,
+          "over_extraction_extra": 1568,
+          "over_extraction_output": 2104
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.3965,
+          "matched": 927,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.9727,
+          "matched": 8113,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.6504,
+          "matched": 800,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.8959,
+          "matched": 3210,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.9774,
+          "matched": 10502,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9654,
+          "matched": 457160,
+          "reference": 473553
+        }
+      }
+    },
     "mistral-ocr-4-1": {
       "n": 2165,
       "submitted": 2165,
@@ -315,10 +446,12 @@
     }
   },
   "order": [
+    "mistral-ocr-2512",
     "tesseract-5",
     "mistral-ocr-4-1"
   ],
   "eligible_order": [
+    "mistral-ocr-2512",
     "tesseract-5",
     "mistral-ocr-4-1"
   ],
