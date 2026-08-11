@@ -106,17 +106,28 @@ def _read_api_key(explicit: pathlib.Path | None) -> str:
     )
 
 
-def _suffix(data: bytes) -> str:
-    """The API dispatches on the uploaded filename's extension, so it must match the bytes."""
-    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
-        return ".webp"
-    if data[:8] == b"\x89PNG\r\n\x1a\n":
-        return ".png"
-    if data[:3] == b"\xff\xd8\xff":
-        return ".jpg"
-    if data[:4] in (b"II*\x00", b"MM\x00*"):
-        return ".tiff"
+# The API validates the upload's declared MIME type, not just the filename: posting WebP bytes as
+# `application/octet-stream` is rejected with "Invalid file type" even though WebP is supported.
+# Sniff the format and declare both the extension and the type it actually is.
+_FORMATS = (
+    (lambda d: d[:4] == b"RIFF" and d[8:12] == b"WEBP", ".webp", "image/webp"),
+    (lambda d: d[:8] == b"\x89PNG\r\n\x1a\n", ".png", "image/png"),
+    (lambda d: d[:3] == b"\xff\xd8\xff", ".jpg", "image/jpeg"),
+    (lambda d: d[:4] in (b"II*\x00", b"MM\x00*"), ".tiff", "image/tiff"),
+    (lambda d: d[:6] in (b"GIF87a", b"GIF89a"), ".gif", "image/gif"),
+)
+
+
+def _upload_type(data: bytes) -> tuple[str, str]:
+    """Return (filename suffix, MIME type) for the uploaded bytes."""
+    for matches, suffix, mime in _FORMATS:
+        if matches(data):
+            return suffix, mime
     raise ValueError(f"unrecognised image format (magic {data[:8]!r})")
+
+
+def _suffix(data: bytes) -> str:
+    return _upload_type(data)[0]
 
 
 def _init_worker(api_key: str, mode: str, timeout: float, max_attempts: int, url: str,
@@ -170,7 +181,8 @@ def _extract_markdown(payload: dict) -> str:
 def ocr_page(page: dict) -> tuple[str, dict]:
     """Submit one page, poll until the result is ready, return its markdown."""
     data = page["image_bytes"]
-    files = {"file": (f"page{_suffix(data)}", data, "application/octet-stream")}
+    suffix, mime = _upload_type(data)
+    files = {"file": (f"page{suffix}", data, mime)}
     form = {"mode": _SETTINGS["mode"], "output_format": "markdown", "paginate": "false"}
 
     submit = _request("POST", _SETTINGS["url"], files=files, data=form).json()

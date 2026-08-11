@@ -36,11 +36,24 @@ def _submitted():
 # --------------------------------------------------------------------------- upload shape
 
 
-def test_suffix_matches_the_bytes():
-    assert D._suffix(WEBP) == ".webp"
-    assert D._suffix(b"\x89PNG\r\n\x1a\n" + b"\x00" * 16) == ".png"
+def test_upload_type_matches_the_bytes():
+    assert D._upload_type(WEBP) == (".webp", "image/webp")
+    assert D._upload_type(b"\x89PNG\r\n\x1a\n" + b"\x00" * 16) == (".png", "image/png")
     with pytest.raises(ValueError, match="unrecognised image format"):
-        D._suffix(b"nope")
+        D._upload_type(b"nope")
+
+
+@responses.activate
+def test_declares_the_real_mime_type_not_octet_stream():
+    """The API validates the declared MIME type: posting WebP as application/octet-stream is
+    rejected with 'Invalid file type' even though WebP is supported."""
+    responses.add(responses.POST, URL, json=_submitted(), status=200)
+    responses.add(responses.GET, CHECK, json={"status": "complete", "markdown": "x"}, status=200)
+    D.ocr_page({"PageID": 1, "image_bytes": WEBP})
+    raw = responses.calls[0].request.body
+    raw = raw if isinstance(raw, bytes) else raw.encode()
+    assert b"image/webp" in raw
+    assert b"application/octet-stream" not in raw
 
 
 @responses.activate
