@@ -1,0 +1,326 @@
+{
+  "schema_version": "2.1",
+  "provenance": {
+    "report_schema_version": "2.1",
+    "scorecard_schema_version": "2.1",
+    "norm_version": "2026-07-20a",
+    "scorer_version": "3.0",
+    "postproc_version": "0",
+    "score": {
+      "norm_version": "2026-07-20a",
+      "jiwer_version": "4.0.0",
+      "rapidfuzz_version": "3.14.5",
+      "lanes": {
+        "diplomatic": "NFC, case-sensitive, keep long-s/ligatures/diacritics",
+        "reading": "NFKC, case-fold, unify quotes+hyphens, de-hyphenate, strip fixed markup"
+      },
+      "grapheme_mode": "codepoint",
+      "word_boundary": "whitespace split, punctuation dropped for token axes",
+      "illegible_marker": "U+FFFD = wildcard (matches any OCR char, excluded from error + length)"
+    },
+    "benchmark": {
+      "dataset_id": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+      "requested_revision": null,
+      "resolved_revision": "local:7d819d2e04913cea",
+      "dataset_fingerprint": "7d819d2e04913cea",
+      "expected_page_count": 2165,
+      "full_page_set_fingerprint": "411a92e4a0e490711dff5875f75363255f2279232c0635fdb162ba4b199da9fd",
+      "sample_stratum_threshold": 80,
+      "expected_stratum_counts": {
+        "content": 1737,
+        "sparse_blank": 428
+      },
+      "sampler_provenance": {
+        "sampler_version": "1.0",
+        "sampler_seed": 0,
+        "sampler_requested_n": 2165,
+        "sampler_source_repo": "finebooks/bhl-impact-gt",
+        "sampler_source_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "sample_stratum_threshold": 80
+      }
+    },
+    "page_set_fingerprint": "411a92e4a0e490711dff5875f75363255f2279232c0635fdb162ba4b199da9fd",
+    "page_count": 2165,
+    "run_by_model": {
+      "mistral-ocr-4-1": {
+        "api_model_requested": "mistral-ocr-4-1",
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "endpoint": "https://api.mistral.ai/v1/ocr",
+        "endpoint_note": "bespoke /v1/ocr returning structured JSON; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "model": "mistral-ocr-4-1",
+        "note": "model-native OCR mode",
+        "postproc_version": "0",
+        "postprocessing": "none \u2014 raw pages[].markdown as returned",
+        "producer": "bhl-ocr-bench producers/mistral_ocr.py",
+        "prompt": null,
+        "request_settings": {
+          "include_image_base64": false,
+          "max_attempts": 5,
+          "timeout_s": 120.0,
+          "workers": 8
+        },
+        "wall_clock_s": 777.8,
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/mistral-ocr-4-1/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "e9ba651ff28550716ff9e366b2d65806802d78ea4bbc22238647ed68e2f3db77"
+        }
+      },
+      "tesseract-5": {
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "language_map": {
+          "birdsofgreatbrit02butl": "eng",
+          "conchologiaiconi05reev": "eng",
+          "daschitinskelett00prel": "deu",
+          "histoirenaturell10cuvi": "fra",
+          "pisciumquerelaee00sche": "lat",
+          "trudyrusskagoent161881russ": "deu+fra"
+        },
+        "language_packs": {
+          "available": 126,
+          "missing": []
+        },
+        "model": "tesseract-5",
+        "note": "model-native OCR mode",
+        "omp_thread_limit": 1,
+        "platform": "Darwin arm64 (homebrew tesseract, CPU)",
+        "postproc_version": "0",
+        "postprocessing": "none \u2014 tesseract-5 is absent from the harness normalize_outputs REGISTRY, so the published row was scored on raw image_to_string output",
+        "producer": "bhl-ocr-bench producers/tesseract5.py",
+        "prompt": null,
+        "tesseract_version": "5.5.2",
+        "workers": 7,
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/tesseract-5/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "b368b08af0e56ef59e3bda14ff4007231049e5044e1f008cdaf1090348727a8a"
+        }
+      }
+    }
+  },
+  "scorecards": {
+    "mistral-ocr-4-1": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.3393,
+      "cer_reading_micro": 0.2439,
+      "cer_ci": [
+        0.0722,
+        0.4615
+      ],
+      "cer_reading_median": 0.0165,
+      "recall_micro": 0.9687,
+      "recall_matched": 479404,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.2186,
+      "over_extraction_extra": 135391,
+      "over_extraction_output": 619436,
+      "script_match": 0.9978,
+      "furniture_global_token_recall_micro": 0.8934,
+      "furniture_global_token_recall_matched": 4299,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.0974,
+        "conchologiaiconi05reev": 0.6106,
+        "daschitinskelett00prel": 0.0589,
+        "histoirenaturell10cuvi": 0.0577,
+        "pisciumquerelaee00sche": 0.2687,
+        "trudyrusskagoent161881russ": 0.1013
+      },
+      "by_script": {
+        "latin": 0.9978
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.0425,
+          "recall_micro": 0.9689,
+          "recall_matched": 478959,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.0467,
+          "over_extraction_extra": 23708,
+          "over_extraction_output": 507171
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 212.985,
+          "recall_micro": 0.7542,
+          "recall_matched": 445,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.9948,
+          "over_extraction_extra": 111683,
+          "over_extraction_output": 112265
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.645,
+          "matched": 1508,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.98,
+          "matched": 8174,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.7195,
+          "matched": 885,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.9534,
+          "matched": 3416,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.9836,
+          "matched": 10569,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9696,
+          "matched": 459165,
+          "reference": 473553
+        }
+      }
+    },
+    "tesseract-5": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.0816,
+      "cer_reading_micro": 0.0672,
+      "cer_ci": [
+        0.0419,
+        0.0843
+      ],
+      "cer_reading_median": 0.0279,
+      "recall_micro": 0.9225,
+      "recall_matched": 456565,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.0859,
+      "over_extraction_extra": 43225,
+      "over_extraction_output": 503036,
+      "script_match": 1.0,
+      "furniture_global_token_recall_micro": 0.68,
+      "furniture_global_token_recall_matched": 3272,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.0431,
+        "conchologiaiconi05reev": 0.0877,
+        "daschitinskelett00prel": 0.0322,
+        "histoirenaturell10cuvi": 0.0393,
+        "pisciumquerelaee00sche": 0.1749,
+        "trudyrusskagoent161881russ": 0.0824
+      },
+      "by_script": {
+        "latin": 1.0
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.0607,
+          "recall_micro": 0.9235,
+          "recall_matched": 456503,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.0776,
+          "over_extraction_extra": 38672,
+          "over_extraction_output": 498397
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 6.8754,
+          "recall_micro": 0.1051,
+          "recall_matched": 62,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.9815,
+          "over_extraction_extra": 4553,
+          "over_extraction_output": 4639
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.0928,
+          "matched": 217,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.9501,
+          "matched": 7925,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.3691,
+          "matched": 454,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.7876,
+          "matched": 2822,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.8978,
+          "matched": 9647,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9284,
+          "matched": 439643,
+          "reference": 473553
+        }
+      }
+    }
+  },
+  "order": [
+    "tesseract-5",
+    "mistral-ocr-4-1"
+  ],
+  "eligible_order": [
+    "tesseract-5",
+    "mistral-ocr-4-1"
+  ],
+  "ineligible_order": []
+}

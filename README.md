@@ -94,6 +94,34 @@ No post-processing is applied: `tesseract-5` is deliberately absent from the har
 
 Requires `brew install tesseract tesseract-lang`.
 
+### mistral-ocr-4-1
+
+    export MISTRAL_API_KEY=...            # or write it to ~/.config/mistral/api_key
+    uv run producers/mistral_ocr.py --limit 5 --out runs/mistral-smoke/run.parquet
+    uv run producers/mistral_ocr.py --model mistral-ocr-4-1 --model-label mistral-ocr-4-1 \
+        --out runs/mistral-ocr-4-1/run.parquet
+
+`/v1/ocr` is bespoke — a document in, structured JSON with a `pages[]` array out — so the harness's
+`run_openai.py` cannot drive it. There is no prompt surface at all, which is why the run provenance
+records `{"prompt": null, "note": "model-native OCR mode"}` as the literal truth rather than a
+placeholder.
+
+**Pin a concrete version, not an alias.** `mistral-ocr-latest` and `mistral-ocr-4` are floating
+aliases; measured on 2026-08-11 both returned byte-identical output to `mistral-ocr-4-1`, while
+`mistral-ocr-4-0` and `mistral-ocr-3` are genuinely different models. Worse, the API echoes the
+alias you sent back at you rather than the version it resolved to, so a run made through an alias
+cannot say afterwards what actually produced it. The producer verifies `--model` against
+`/v1/models` before spending anything and aborts with the list of available OCR models.
+
+**Read its Loop % as "unknown", not "zero".** The board's loop rate comes from a generating model
+reporting `finish_reason == "length"`. `/v1/ocr` reports no such thing, so a repetition loop is
+indistinguishable from a long transcription and the row shows 0.00. This engine demonstrably does
+loop — on blank plates it emits repeated LaTeX and unrelated boilerplate. The consequence is that
+Mistral's row is scored on the **whole** corpus including its own worst pages, whereas a row like
+PaddleOCR-VL-1.6 (6.47% loop) is scored with 6.47% of its hardest pages removed. That makes this
+row conservative relative to those, not flattered by them — but the two numbers are not
+like-for-like, and the difference is a measurement artefact, not a quality finding.
+
 ## After any change
 
     uv run pytest                            # this repo's producer tests

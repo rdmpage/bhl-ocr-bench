@@ -1,0 +1,21 @@
+{
+  "api_model_requested": "mistral-ocr-4-1",
+  "dataset": "finebooks/bhl-impact-gt",
+  "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+  "endpoint": "https://api.mistral.ai/v1/ocr",
+  "endpoint_note": "bespoke /v1/ocr returning structured JSON; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+  "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+  "model": "mistral-ocr-4-1",
+  "note": "model-native OCR mode",
+  "postproc_version": "0",
+  "postprocessing": "none \u2014 raw pages[].markdown as returned",
+  "producer": "bhl-ocr-bench producers/mistral_ocr.py",
+  "prompt": null,
+  "request_settings": {
+    "include_image_base64": false,
+    "max_attempts": 5,
+    "timeout_s": 120.0,
+    "workers": 8
+  },
+  "wall_clock_s": 777.8
+}
