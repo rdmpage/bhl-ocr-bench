@@ -10,10 +10,11 @@ dependencies = [
     "pyarrow",
     "pillow",
     "pytesseract",
+    "requests",
 ]
 
 [dependency-groups]
-dev = ["pytest"]
+dev = ["pytest", "responses"]
 
 # Reproducibility: pin the index and a fixed resolution cutoff so every machine locks identically,
 # matching the harness's own policy. Bump deliberately when newer deps are wanted.
