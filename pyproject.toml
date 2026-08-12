@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "Producer adapters that feed OCR engines into the pinned finebooks/bhl-ocr-eval scorer."
 requires-python = ">=3.10"
 dependencies = [
+    # beautifulsoup4: the surya-ocr-2 producer flattens the engine's per-block HTML to text with
+    # it. The producer itself runs from surya-env (torch needs its own venv), but it is a real
+    # dependency of this repo's code and its tests, so it is declared here too.
+    "beautifulsoup4",
     "datasets>=3",
     "huggingface-hub>=0.28",
     "pandas",

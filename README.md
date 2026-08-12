@@ -182,15 +182,28 @@ Note also its furniture policy is the opposite of Mistral's: page_header evidenc
 page_footer 0.12 (vs Mistral v3's 0.90/0.65), i.e. it is a clean-reading engine that drops running
 heads and page numbers. Per DESIGN.md that is policy, not quality.
 
-### surya-ocr-2 — parked
+### surya-ocr-2 — the one row we serve ourselves
 
-Investigated and **blocked on macOS 13**, not merely slow: PyTorch needs macOS 14+ for Metal,
-llama.cpp's Metal backend asserts on model load, and Surya 0.22 has no CPU fallback (recognition
-supports only vLLM or llama.cpp). See [docs/surya-local.md](docs/surya-local.md) for the evidence,
-the disk-space situation that gates the OS upgrade, and the retry recipe.
+Open weights, so this is the only row that can name what served it — which is exactly what
+`RESULTS.md`'s *"we ran the inference ourselves"* bar asks for and what none of the three
+hosted-API rows can do. Produced locally by `producers/surya_ocr2.py` through llama.cpp on Apple
+Silicon; run it with `surya-env/bin/python`, not `uv run`.
 
-It matters because it is the one engine here whose open weights would let a row meet `RESULTS.md`'s
-*"we ran the inference ourselves"* bar, which none of the three hosted-API rows do.
+Previously **blocked on macOS 13** (torch needs macOS 14+ for Metal; llama.cpp's Metal backend
+asserted on model load). The macOS 26 upgrade cleared both, with nothing else changed.
+
+**It is self-served, but it is not the published board's serving configuration.** Upstream runs
+surya-ocr-2 under vLLM at `dtype="bfloat16"` on CUDA; this is the F16 GGUF through llama.cpp on
+Metal. Both are 16-bit — the GGUF header reports `MOSTLY_F16`, not a lossy 4/8-bit quant — but the
+kernels differ, and RESULTS.md is explicit that CER is sensitive to serving configuration. The
+caveat ships in the run's `producer-run.json`.
+
+Two traps, both documented in [docs/surya-local.md](docs/surya-local.md): Surya returns **per-block
+HTML** and the diplomatic scoring lane does *not* strip markup, so the producer must flatten to
+text (it copies the upstream driver's serialization exactly); and Surya's loader downloads the GGUF
+with **no revision**, so the producer resolves and pins the SHA itself or the recorded pin is
+fiction. Batching is pure throughput — 24 pages/call is ~10x faster than 1 with byte-identical
+output.
 
 ## After any change
 
