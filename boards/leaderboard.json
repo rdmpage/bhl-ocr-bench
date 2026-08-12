@@ -42,7 +42,7 @@
     "page_set_fingerprint": "411a92e4a0e490711dff5875f75363255f2279232c0635fdb162ba4b199da9fd",
     "page_count": 2165,
     "run_by_model": {
-      "datalab-balanced": {
+      "datalab-balanced-apidefault": {
         "dataset": "finebooks/bhl-impact-gt",
         "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
         "endpoint": "https://www.datalab.to/api/v1/convert",
@@ -75,8 +75,48 @@
           "gt_resolved_revision": "local:7d819d2e04913cea",
           "ocr_column": "markdown",
           "key_column": "PageID",
-          "model_column": "model",
+          "model_column": null,
           "local_file_sha256": "8ecbfaec9f7d2417be7260f7126c10a745ece3cbdb0a81af1b3a10ebccfe631f"
+        }
+      },
+      "datalab-balanced-configured": {
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "endpoint": "https://www.datalab.to/api/v1/convert",
+        "endpoint_note": "bespoke multipart /api/v1/convert with asynchronous polling; NOT OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "model": "datalab-balanced-configured",
+        "note": "model-native OCR mode",
+        "postproc_version": "0",
+        "postprocessing": "none \u2014 raw markdown as returned",
+        "producer": "bhl-ocr-bench producers/datalab.py",
+        "prompt": null,
+        "provenance_caveat": "Hosted API row. RESULTS.md 'What counts as a score' requires self-run inference under a pinned image and model revision; a hosted endpoint cannot attest serving configuration or quantization. Any `served_versions` above is what the API volunteered, not a pin.",
+        "request_settings": {
+          "additional_config": "{\"keep_pageheader_in_output\": true, \"keep_pagefooter_in_output\": true}",
+          "disable_image_captions": "true",
+          "max_attempts": 6,
+          "mode": "balanced",
+          "output_format": "markdown",
+          "paginate": "false",
+          "poll_timeout_s": 600.0,
+          "rpm_cap": 190,
+          "timeout_s": 120.0,
+          "workers": 12
+        },
+        "request_settings_note": "disable_image_captions and additional_config.keep_page{header,footer}_in_output are undocumented form fields; captions are figure descriptions rather than transcription, and the furniture flags set this row's policy to match the verbatim rows (see DESIGN.md, 'The furniture trade-off')",
+        "served_versions": null,
+        "wall_clock_s": 2233.5,
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/datalab-balanced-configured/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "ea5c52190813737eaf147268a021dde3474ab579c880747b089c810caf649ff5"
         }
       },
       "mistral-ocr-2512": {
@@ -184,7 +224,7 @@
     }
   },
   "scorecards": {
-    "datalab-balanced": {
+    "datalab-balanced-apidefault": {
       "n": 2165,
       "submitted": 2165,
       "errors": 0,
@@ -279,6 +319,105 @@
         "text": {
           "rate": 0.9694,
           "matched": 459051,
+          "reference": 473553
+        }
+      }
+    },
+    "datalab-balanced-configured": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.1008,
+      "cer_reading_micro": 0.063,
+      "cer_ci": [
+        0.0398,
+        0.0866
+      ],
+      "cer_reading_median": 0.0179,
+      "recall_micro": 0.9703,
+      "recall_matched": 480218,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.0385,
+      "over_extraction_extra": 19418,
+      "over_extraction_output": 504458,
+      "script_match": 0.9981,
+      "furniture_global_token_recall_micro": 0.9485,
+      "furniture_global_token_recall_matched": 4564,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.0382,
+        "conchologiaiconi05reev": 0.0991,
+        "daschitinskelett00prel": 0.0398,
+        "histoirenaturell10cuvi": 0.0371,
+        "pisciumquerelaee00sche": 0.1479,
+        "trudyrusskagoent161881russ": 0.0573
+      },
+      "by_script": {
+        "latin": 0.9981
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.059,
+          "recall_micro": 0.9705,
+          "recall_matched": 479723,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.0366,
+          "over_extraction_extra": 18390,
+          "over_extraction_output": 502869
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 4.3069,
+          "recall_micro": 0.839,
+          "recall_matched": 495,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.6469,
+          "over_extraction_extra": 1028,
+          "over_extraction_output": 1589
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.7511,
+          "matched": 1756,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.9865,
+          "matched": 8228,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.8423,
+          "matched": 1036,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.9852,
+          "matched": 3530,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.9834,
+          "matched": 10567,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9707,
+          "matched": 459683,
           "reference": 473553
         }
       }
@@ -583,14 +722,16 @@
   },
   "order": [
     "mistral-ocr-2512",
+    "datalab-balanced-configured",
     "tesseract-5",
-    "datalab-balanced",
+    "datalab-balanced-apidefault",
     "mistral-ocr-4-1"
   ],
   "eligible_order": [
     "mistral-ocr-2512",
+    "datalab-balanced-configured",
     "tesseract-5",
-    "datalab-balanced",
+    "datalab-balanced-apidefault",
     "mistral-ocr-4-1"
   ],
   "ineligible_order": []

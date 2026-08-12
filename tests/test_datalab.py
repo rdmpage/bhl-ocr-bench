@@ -7,6 +7,8 @@ that down.
 """
 from __future__ import annotations
 
+import json
+
 import pytest
 import requests
 import responses
@@ -22,11 +24,51 @@ WEBP = b"RIFF\x00\x00\x00\x00WEBP" + b"\x00" * 32
 def _worker(monkeypatch):
     monkeypatch.setattr(D.time, "sleep", lambda _s: None)
     D._SETTINGS.clear()
-    D._SETTINGS.update(session=requests.Session(), mode="balanced", timeout=30, max_attempts=4,
-                       url=URL, poll_timeout=600.0, poll_interval=0.0,
+    form = D.build_form("balanced", image_captions=False, keep_furniture=True)
+    D._SETTINGS.update(session=requests.Session(), form=form, mode="balanced", timeout=30,
+                       max_attempts=4, url=URL, poll_timeout=600.0, poll_interval=0.0,
                        limiter=D.RateLimiter(0))
     yield
     D._SETTINGS.clear()
+
+
+# --------------------------------------------------------------------------- form fields
+
+
+def test_form_disables_image_captions_by_default():
+    """Figure descriptions are a product feature, not transcription: on this corpus they were
+    4.5% of output and worth ~0.055 CER."""
+    form = D.build_form("balanced", image_captions=False, keep_furniture=True)
+    assert form["disable_image_captions"] == "true"
+    assert form["output_format"] == "markdown"
+
+
+def test_form_can_re_enable_captions():
+    form = D.build_form("balanced", image_captions=True, keep_furniture=True)
+    assert form["disable_image_captions"] == "false"
+
+
+def test_furniture_flags_are_nested_json_under_additional_config():
+    """The API takes these inside a JSON-encoded `additional_config` field, not as top-level
+    form keys — passing them flat silently does nothing."""
+    kept = json.loads(D.build_form("fast", image_captions=False,
+                                   keep_furniture=True)["additional_config"])
+    assert kept == {"keep_pageheader_in_output": True, "keep_pagefooter_in_output": True}
+    dropped = json.loads(D.build_form("fast", image_captions=False,
+                                      keep_furniture=False)["additional_config"])
+    assert dropped == {"keep_pageheader_in_output": False, "keep_pagefooter_in_output": False}
+
+
+@responses.activate
+def test_every_form_field_reaches_the_wire():
+    responses.add(responses.POST, URL, json=_submitted(), status=200)
+    responses.add(responses.GET, CHECK, json={"status": "complete", "markdown": "x"}, status=200)
+    D.ocr_page({"PageID": 1, "image_bytes": WEBP})
+    raw = responses.calls[0].request.body
+    raw = raw if isinstance(raw, bytes) else raw.encode()
+    assert b"disable_image_captions" in raw and b"true" in raw
+    assert b"keep_pageheader_in_output" in raw
+    assert b"additional_config" in raw
 
 
 def _submitted():

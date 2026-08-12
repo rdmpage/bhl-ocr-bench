@@ -149,7 +149,22 @@ which build served it.
 Rate limits are tiered and **polls count toward them**: free tier is 10 req/min (≈8 hours for the
 corpus at ~2.8 requests/page), Team is 200/min (≈45 minutes). `--rpm` throttles client-side.
 
-**Its headline is dominated by image captioning, not reading.** Datalab emits AI-generated image
+**Two undocumented form fields matter more than anything else here.** `disable_image_captions=true`
+stops the engine writing AI-generated figure descriptions into the markdown (it empties the alt
+text; the `![](…)` tag itself remains). `additional_config` — a JSON-encoded field — carries
+`keep_pageheader_in_output` and `keep_pagefooter_in_output`. Setting all three took the row from
+CER 0.1692 to **0.0630**, content 0.1375 → 0.0590, sparse 33.58 → 4.31, with recall and
+over-extraction both becoming the best on the board (0.9703 / 0.0385). Both configurations are kept
+as separate rows (`-apidefault` and `-configured`) because they are different measurements, not a
+before-and-after of the same one.
+
+The furniture flags did more than change policy: `page_header` token evidence went 0.23 → 0.99 and
+`page_footer` 0.12 → 0.84 as expected, but `section_header` also rose 0.94 → 0.98, i.e. with header
+dropping enabled the engine was discarding some material the GT counts as **body**, not just
+furniture. That is why body CER improved rather than worsening — see the caveat in the git history:
+captions and furniture changed in the same run, so the split between them is not cleanly attributed.
+
+**The api-default row's headline is dominated by image captioning, not reading.** Datalab emits AI-generated image
 *descriptions* as markdown alt text — `![A scientific plate showing 42 numbered eggs of various
 bird species, arranged in a 7x6 grid…](…)` — averaging 135 characters across 1,287 placeholders,
 4.5% of all output. The frozen reading normalizer already strips markdown pipes, headings, bold,

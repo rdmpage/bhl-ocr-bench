@@ -130,15 +130,43 @@ def _suffix(data: bytes) -> str:
     return _upload_type(data)[0]
 
 
-def _init_worker(api_key: str, mode: str, timeout: float, max_attempts: int, url: str,
+def build_form(mode: str, *, image_captions: bool, keep_furniture: bool) -> dict:
+    """The multipart form fields, including two options that are not in the public docs.
+
+    `disable_image_captions` stops the engine writing an AI-generated *description* of each
+    figure into the markdown as alt text. Those descriptions are a product feature, not a
+    transcription of ink on the page, and on this corpus they were 4.5% of all output and worth
+    ~0.055 CER — so for a transcription benchmark they are noise, and captions default to OFF here.
+
+    `keep_pageheader_in_output` / `keep_pagefooter_in_output` (nested under `additional_config`)
+    control whether running heads and page numbers — the GT's FURNITURE layer — are emitted at
+    all. Per DESIGN.md this is *policy, not quality*: the body-only headline neither rewards nor
+    penalises it in principle, though in practice emitted furniture does land as zero-reference
+    insertions against a body target. Keeping it is the default here so this row sits on the same
+    side of that axis as the verbatim Mistral rows rather than being compared across policies.
+    """
+    additional = {
+        "keep_pageheader_in_output": bool(keep_furniture),
+        "keep_pagefooter_in_output": bool(keep_furniture),
+    }
+    return {
+        "mode": mode,
+        "output_format": "markdown",
+        "paginate": "false",
+        "disable_image_captions": "false" if image_captions else "true",
+        "additional_config": json.dumps(additional),
+    }
+
+
+def _init_worker(api_key: str, form: dict, timeout: float, max_attempts: int, url: str,
                  poll_timeout: float, poll_interval: float, limiter: RateLimiter) -> None:
     import requests
 
     session = requests.Session()
     session.headers.update({"X-API-Key": api_key})
-    _SETTINGS.update(session=session, mode=mode, timeout=timeout, max_attempts=max_attempts,
-                     url=url, poll_timeout=poll_timeout, poll_interval=poll_interval,
-                     limiter=limiter)
+    _SETTINGS.update(session=session, form=form, mode=form.get("mode"), timeout=timeout,
+                     max_attempts=max_attempts, url=url, poll_timeout=poll_timeout,
+                     poll_interval=poll_interval, limiter=limiter)
 
 
 def _request(method: str, url: str, **kwargs):
@@ -183,7 +211,7 @@ def ocr_page(page: dict) -> tuple[str, dict]:
     data = page["image_bytes"]
     suffix, mime = _upload_type(data)
     files = {"file": (f"page{suffix}", data, mime)}
-    form = {"mode": _SETTINGS["mode"], "output_format": "markdown", "paginate": "false"}
+    form = dict(_SETTINGS["form"])
 
     submit = _request("POST", _SETTINGS["url"], files=files, data=form).json()
     if not submit.get("success", True):
@@ -233,6 +261,13 @@ def main() -> None:
     ap.add_argument("--id-column", default="PageID")
     ap.add_argument("--image-column", default="image")
     ap.add_argument("--mode", default="balanced", choices=("fast", "balanced", "accurate"))
+    ap.add_argument("--image-captions", action="store_true", default=False,
+                    help="let the engine write AI-generated figure descriptions into the markdown. "
+                         "OFF by default: they are not transcription, and on this corpus they were "
+                         "4.5%% of output and worth ~0.055 CER.")
+    ap.add_argument("--drop-furniture", dest="keep_furniture", action="store_false", default=True,
+                    help="let the engine omit running heads and page numbers. Kept by default so "
+                         "this row sits on the same furniture policy as the verbatim rows.")
     ap.add_argument("--model-label", default=None,
                     help="board row name; defaults to datalab-<mode>")
     ap.add_argument("--url", default=API_URL)
@@ -253,7 +288,14 @@ def main() -> None:
     ap.add_argument("--no-retry-errors", dest="retry_errors", action="store_false", default=True)
     args = ap.parse_args()
 
-    label = args.model_label or f"datalab-{args.mode}"
+    # The config is part of the row's identity: a captions-on run and a captions-off run are not
+    # the same measurement, and silently sharing a label would let one overwrite the other's
+    # checkpoint and produce a table mixing both.
+    suffixes = "".join(("-captions" if args.image_captions else "",
+                        "" if args.keep_furniture else "-nofurniture"))
+    label = args.model_label or f"datalab-{args.mode}{suffixes}"
+    form = build_form(args.mode, image_captions=args.image_captions,
+                      keep_furniture=args.keep_furniture)
     out_path = pathlib.Path(args.out or f"runs/{label}/run.parquet")
     checkpoint_path = pathlib.Path(args.checkpoint) if args.checkpoint \
         else out_path.parent / "checkpoint.jsonl"
@@ -289,7 +331,7 @@ def main() -> None:
     common.run_pages(
         streamed(), ocr_page, checkpoint=checkpoint, workers=args.workers, executor="thread",
         initializer=_init_worker,
-        initargs=(api_key, args.mode, args.timeout, args.max_attempts, args.url,
+        initargs=(api_key, form, args.timeout, args.max_attempts, args.url,
                   args.poll_timeout, args.poll_interval, limiter),
         retry_errors=args.retry_errors, progress_every=25,
     )
@@ -311,10 +353,14 @@ def main() -> None:
         "endpoint": args.url,
         "endpoint_note": "bespoke multipart /api/v1/convert with asynchronous polling; NOT "
                          "OpenAI-chat-compatible, so the harness run_openai.py cannot drive it",
-        "request_settings": {"mode": args.mode, "output_format": "markdown", "paginate": False,
-                             "workers": args.workers, "rpm_cap": args.rpm,
+        "request_settings": {**form, "workers": args.workers, "rpm_cap": args.rpm,
                              "timeout_s": args.timeout, "poll_timeout_s": args.poll_timeout,
                              "max_attempts": args.max_attempts},
+        "request_settings_note": "disable_image_captions and additional_config."
+                                 "keep_page{header,footer}_in_output are undocumented form fields; "
+                                 "captions are figure descriptions rather than transcription, and "
+                                 "the furniture flags set this row's policy to match the verbatim "
+                                 "rows (see DESIGN.md, 'The furniture trade-off')",
         "served_versions": {json.loads(k): v for k, v in served.items()} if served else None,
         "provenance_caveat": "Hosted API row. RESULTS.md 'What counts as a score' requires "
                              "self-run inference under a pinned image and model revision; a hosted "
