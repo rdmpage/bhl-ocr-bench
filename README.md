@@ -182,6 +182,16 @@ Note also its furniture policy is the opposite of Mistral's: page_header evidenc
 page_footer 0.12 (vs Mistral v3's 0.90/0.65), i.e. it is a clean-reading engine that drops running
 heads and page numbers. Per DESIGN.md that is policy, not quality.
 
+### surya-ocr-2 — parked
+
+Investigated and **blocked on macOS 13**, not merely slow: PyTorch needs macOS 14+ for Metal,
+llama.cpp's Metal backend asserts on model load, and Surya 0.22 has no CPU fallback (recognition
+supports only vLLM or llama.cpp). See [docs/surya-local.md](docs/surya-local.md) for the evidence,
+the disk-space situation that gates the OS upgrade, and the retry recipe.
+
+It matters because it is the one engine here whose open weights would let a row meet `RESULTS.md`'s
+*"we ran the inference ourselves"* bar, which none of the three hosted-API rows do.
+
 ## After any change
 
     uv run pytest                            # this repo's producer tests
