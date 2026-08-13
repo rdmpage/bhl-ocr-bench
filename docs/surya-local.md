@@ -119,5 +119,36 @@ can silently come out blank, so the producer records the labels per page in `pro
 prints a run-level count of blank pages and skipped blocks.
 
 On the 12-page smoke run, 5 pages produced no text and **all 5 have empty ground truth** — the skip
-was correct every time. Worth re-checking on the full run: a blank page whose GT has text is a
-layout misfire, not a reading error, and the two want different fixes.
+was correct every time.
+
+On the full run, 352 pages produced no text and 1,747 blocks were skipped. Audited against GT:
+**23 pages were blanked despite having GT text**, every one of them a plate labelled as a single
+`Picture` whose only text is a short caption. 22 of the 23 have under 80 characters of GT, i.e.
+they are `sparse_blank` stratum and never reach the headline; the exception is page `9739742` at 97
+characters, which does count. No page came back badly truncated (0 pages returned under 35% of GT
+length while having GT over 500 characters).
+
+The net of the skip is positive: it is *why* this row has the board's best sparse-page CER (2.64,
+against 4.31 for datalab-configured and 33.58 for datalab-apidefault), because it stays silent on
+plates instead of emitting text against a near-empty reference. The cost is visible in the region
+evidence — `caption` 0.69 and `page_footer` 0.69, against `text` 0.97 and `footnote` 0.99.
+
+Left as-is deliberately: the upstream driver skips the same blocks, so OCR'ing `Picture` regions
+would make this row stop matching the implementation it exists to reproduce. It is the same
+policy-vs-quality axis DESIGN.md describes for furniture.
+
+## One transient inference failure, and why it cost nothing
+
+The run logged four consecutive `400 ... Failed to initialize samplers: failed to parse grammar`
+warnings from llama-server. Four is exactly one item exhausting `max_retries=3` (one attempt plus
+three retries) in `inference/backends/openai_client.py`, which swallows the exception and returns
+`GenerationResult(raw="", error=True)`.
+
+That does **not** silently blank a page. In `full_page` mode an errored generation makes
+`_build_page` return `None`, which triggers Surya's documented per-page fallback to layout plus
+block-mode OCR. The page was still read, just through a different prompt path — which is why the
+checkpoint records 0 error rows and 0 block-level errors for the whole run.
+
+Worth knowing anyway, because the mechanism is one to distrust in general: a swallowed inference
+error is invisible in the producer's own error count. The GT audit above, not the error count, is
+what actually rules out silent damage.

@@ -429,16 +429,17 @@ def main() -> None:
     meta_path.write_text(json.dumps({
         "prompt": None,
         "note": "model-native OCR mode (RecognitionPredictor, full_page=True)",
-        "producer": "bhl-ocr-bench producers/surya.py",
+        "producer": "bhl-ocr-bench producers/surya_ocr2.py",
         "model": MODEL,
         "weights": weights,
         "surya_version": "0.22.1",
         "inference_backend": "llamacpp",
         "environment": environment,
         "batch_size": args.batch_size,
-        "batch_note": "batching is a throughput setting only: at batch 6 the concatenated block "
-                      "HTML was byte-identical to one-at-a-time over a 6-page sample, at 2.45x "
-                      "the speed",
+        "batch_note": "batching is a throughput setting only. Measured 1->6 2.45x, 6->12 2.62x, "
+                      "12->24 1.59x, and at every step the concatenated block HTML was "
+                      "byte-identical to the smaller grouping over the same pages, so batch size "
+                      "cannot move the score",
         "serving_caveat": "Self-hosted, so the weights and the serving stack are both pinned above "
                           "— but this is NOT the configuration the published board used. Upstream "
                           "(uv-scripts/ocr/surya-ocr.py) serves surya-ocr-2 with vLLM at "

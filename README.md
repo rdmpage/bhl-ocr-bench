@@ -76,6 +76,31 @@ than a second opinion. It reproduces the documented 1,737 content / 428 sparse_b
 Images are omitted from `benchmark/gt` (the scorer drops them anyway); producers read images from
 the source dataset directly.
 
+## Where our rows stand
+
+Headline is micro-averaged CER on the reading lane, body-only, over all 2,165 pages. Every row is
+eligible: 2,165 pages, 0 producer errors, 0 missing.
+
+| model | CERdip | CERread | 95% CI | recallµ | overµ | sparse CER |
+|---|---:|---:|---|---:|---:|---:|
+| **surya-ocr-2** (self-served) | **0.0521** | **0.0391** | [0.0321, 0.0471] | 0.9666 | 0.0366 | **2.64** |
+| mistral-ocr-2512 | 0.0862 | 0.0593 | [0.0377, 0.0731] | 0.9631 | 0.0494 | 3.10 |
+| datalab-balanced-configured | 0.1008 | 0.0630 | [0.0398, 0.0866] | 0.9703 | 0.0385 | 4.31 |
+| tesseract-5 | 0.0816 | 0.0672 | [0.0419, 0.0843] | 0.9225 | 0.0859 | 6.88 |
+| datalab-balanced-apidefault | 0.2070 | 0.1692 | [0.0602, 0.2882] | 0.9685 | 0.1432 | 33.58 |
+| mistral-ocr-4-1 | 0.3393 | 0.2439 | [0.0722, 0.4615] | 0.9687 | 0.2186 | 212.99 |
+
+**Read the confidence intervals before reading the order.** They are bootstrapped over six volumes,
+so they are wide and they overlap: surya-ocr-2's [0.0321, 0.0471] overlaps mistral-ocr-2512's
+[0.0377, 0.0731] and datalab-configured's [0.0398, 0.0866]. The top three are **not** separated at
+this sample size. What is clearer is the diplomatic lane, where surya-ocr-2 leads by a wider margin
+(0.0521 vs 0.0862) — it reproduces case, ligatures and diacritics more faithfully, not just the
+folded reading text.
+
+`pisciumquerelaee00sche` is the hardest volume for *every* engine (surya 0.1341, mistral-2512
+0.1317, datalab 0.1479, tesseract 0.1749) — a 1662 Latin text with long-s throughout, where the GT
+itself is visibly lossy. That is a corpus property, not a model finding.
+
 ## Engines
 
 ### tesseract-5 — the plumbing acceptance test
@@ -204,6 +229,22 @@ text (it copies the upstream driver's serialization exactly); and Surya's loader
 with **no revision**, so the producer resolves and pins the SHA itself or the recorded pin is
 fiction. Batching is pure throughput — 24 pages/call is ~10x faster than 1 with byte-identical
 output.
+
+**Result: CER 0.0391 reading / 0.0521 diplomatic**, 2,165 pages, 0 errors, in 11.4h on an M1 Pro.
+Top of our board on both lanes, though the reading-lane CIs overlap the next two rows (see above).
+
+**Its sparse-page behaviour is the best on the board (2.64)** and that is downstream of the layout
+skip, not in spite of it. Surya drops `Figure/Image/Diagram/Blank-Page` blocks, so on the corpus's
+plates it stays quiet where other engines emit text against a near-empty reference — the failure
+mode that put datalab-apidefault at 33.58 and mistral-ocr-4-1 at 212.99.
+
+The same skip is also its one real cost. 23 pages came back empty despite having GT text: plates
+whose only text is a short caption, which Surya labels as a single `Picture` and skips. 22 of the 23
+fall under the 80-char `sparse_blank` threshold so they never touch the headline; one
+(page `9739742`, 97 chars) lands in the content stratum. It shows up in the region evidence as
+`caption` 0.69 and `page_footer` 0.69 against `text` 0.97 and `footnote` 0.99. This is upstream
+behaviour, not ours — the reference driver skips the same blocks — so the row keeps it and reports
+it rather than quietly diverging from the implementation it is meant to match.
 
 ## After any change
 
