@@ -103,14 +103,19 @@ the source dataset directly.
 Headline is micro-averaged CER on the reading lane, body-only, over all 2,165 pages. Every row is
 eligible: 2,165 pages, 0 producer errors, 0 missing.
 
-| model | CERdip | CERread | 95% CI | recallµ | overµ | sparse CER |
-|---|---:|---:|---|---:|---:|---:|
-| **surya-ocr-2** (self-served) | **0.0521** | **0.0391** | [0.0321, 0.0471] | 0.9666 | 0.0366 | **2.64** |
-| mistral-ocr-2512 | 0.0862 | 0.0593 | [0.0377, 0.0731] | 0.9631 | 0.0494 | 3.10 |
-| datalab-balanced-configured | 0.1008 | 0.0630 | [0.0398, 0.0866] | 0.9703 | 0.0385 | 4.31 |
-| tesseract-5 | 0.0816 | 0.0672 | [0.0419, 0.0843] | 0.9225 | 0.0859 | 6.88 |
-| datalab-balanced-apidefault | 0.2070 | 0.1692 | [0.0602, 0.2882] | 0.9685 | 0.1432 | 33.58 |
-| mistral-ocr-4-1 | 0.3393 | 0.2439 | [0.0722, 0.4615] | 0.9687 | 0.2186 | 212.99 |
+| model | CERdip | CERread | 95% CI | content | sparse | recallµ | overµ |
+|---|---:|---:|---|---:|---:|---:|---:|
+| **surya-ocr-2** (self-served) | **0.0521** | **0.0391** | [0.0321, 0.0471] | **0.0366** | **2.64** | 0.9666 | 0.0366 |
+| mistral-ocr-2512 | 0.0862 | 0.0593 | [0.0377, 0.0731] | 0.0564 | 3.10 | 0.9631 | 0.0494 |
+| datalab-balanced-configured | 0.1008 | 0.0630 | [0.0398, 0.0866] | 0.0590 | 4.31 | **0.9703** | 0.0385 |
+| tesseract-5 | 0.0816 | 0.0672 | [0.0419, 0.0843] | 0.0607 | 6.88 | 0.9225 | 0.0859 |
+| datalab-balanced-apidefault | 0.2070 | 0.1692 | [0.0602, 0.2882] | 0.1375 | 33.58 | 0.9685 | 0.1432 |
+| mistral-ocr-4-1 | 0.3393 | 0.2439 | [0.0722, 0.4615] | 0.0425 | 212.99 | 0.9687 | 0.2186 |
+
+The **content** and **sparse** columns are the two strata (1,737 / 428 pages) that the headline
+micro-averages together. Splitting them is what makes `mistral-ocr-4-1` legible: at content CER
+0.0425 it reads running text better than anything else we ran except surya, and its last place is
+one defect on near-empty pages rather than bad OCR. See *mistral-ocr-4-1*, below.
 
 **Read the confidence intervals before reading the order.** They are bootstrapped over six volumes,
 so they are wide and they overlap: surya-ocr-2's [0.0321, 0.0471] overlaps mistral-ocr-2512's
@@ -122,6 +127,65 @@ folded reading text.
 `pisciumquerelaee00sche` is the hardest volume for *every* engine (surya 0.1341, mistral-2512
 0.1317, datalab 0.1479, tesseract 0.1749) — a 1662 Latin text with long-s throughout, where the GT
 itself is visibly lossy. That is a corpus property, not a model finding.
+
+## Interleaved with the published board
+
+Our rows against the 14 models in the pinned harness's [RESULTS.md](harness/RESULTS.md), ranked
+together on the same headline. Same ground truth, same page set (`411a92e4a0e4`), same frozen
+scorer 3.0 / normalizer `2026-07-20a` — which is the entire reason the pin exists. **Ours in bold.**
+
+| CER read | model | content | sparse | recallµ | loop % |
+|---:|---|---:|---:|---:|---:|
+| 0.0235 | rednote-hilab/dots.ocr | 0.0220 | 1.79 | 0.9704 | 3.88 |
+| 0.0237 | rednote-hilab/dots.mocr | 0.0216 | 2.23 | 0.9836 | 0.88 |
+| 0.0305 | ATH-MaaS/OvisOCR2 | 0.0280 | 2.79 | 0.9614 | 2.54 |
+| **0.0391** | **surya-ocr-2** (self-served) | **0.0366** | **2.64** | **0.9666** | — |
+| 0.0392 | PaddlePaddle/PaddleOCR-VL-1.6 | 0.0367 | 2.69 | 0.9415 | 6.47 |
+| 0.0432 | allenai/olmOCR-2-7B-1025-FP8 | 0.0302 | 13.64 | 0.9573 | 0.55 |
+| 0.0489 | lightonai/LightOnOCR-2-1B | 0.0351 | 15.79 | 0.9688 | 2.08 |
+| 0.0491 | zai-org/GLM-OCR | 0.0236 | 26.93 | 0.9674 | 0.51 |
+| 0.0507 | Qwen/Qwen3.5-9B | 0.0314 | 19.98 | 0.9587 | 1.52 |
+| 0.0575 | baidu/Qianfan-OCR | 0.0404 | 17.89 | 0.9540 | 1.06 |
+| **0.0593** | **mistral-ocr-2512** | **0.0564** | **3.10** | **0.9631** | n/a |
+| 0.0604 | baidu/Unlimited-OCR | 0.0451 | 16.19 | 0.9537 | 0.46 |
+| 0.0617 | deepseek-ai/DeepSeek-OCR | 0.0590 | 2.96 | 0.9206 | 0.55 |
+| 0.0620 | deepseek-ai/DeepSeek-OCR-2 | 0.0600 | 2.09 | 0.9262 | 0.32 |
+| **0.0630** | **datalab-balanced-configured** | **0.0590** | **4.31** | **0.9703** | n/a |
+| 0.0642 | tesseract-5 *(published)* | 0.0591 | 5.49 | 0.9210 | 0.00 |
+| **0.0672** | **tesseract-5** *(ours)* | **0.0607** | **6.88** | **0.9225** | 0.00 |
+| **0.1692** | **datalab-balanced-apidefault** | **0.1375** | **33.58** | **0.9685** | n/a |
+| 0.1965 | ds4sd/SmolDocling-256M-preview | 0.1946 | 2.18 | 0.8519 | 5.31 |
+| **0.2439** | **mistral-ocr-4-1** | **0.0425** | **212.99** | **0.9687** | n/a |
+
+Four things to read before the ordering.
+
+**Our numbers run ~5% pessimistic, and the two tesseract rows measure it.** Same engine, same
+pages, same frozen scorer, run twice: the published row reads 0.0642, ours 0.0672 (+0.0030
+headline, +0.0016 content). That gap is the calibration offset on every row we produced —
+`tesseract-5` is in this repo to measure it, which is why it is a plumbing acceptance test rather
+than a result. Applied to surya, 0.0391 becomes ~0.0361 board-equivalent.
+
+**Loop % is not comparable across the two halves.** The board's loop rate comes from a generating
+model reporting `finish_reason == "length"`; looped pages are then excluded from that row's other
+numbers. Neither Mistral's `/v1/ocr` nor Datalab reports anything equivalent, so their cells read
+`n/a` — *unknown*, not zero (see *mistral-ocr-4-1*, below). Our rows are therefore scored on the
+whole corpus including their own worst pages, while PaddleOCR-VL-1.6 directly below surya is scored
+with 6.47% of its hardest pages removed. That makes our rows conservative relative to the neural
+ones, not flattered by them.
+
+**The sparse column is where our engines do well and the mid-board VLMs do not.** surya's 2.64
+is beaten only by dots.ocr, DeepSeek-OCR-2 and SmolDocling. Meanwhile the whole 0.043–0.051 cluster
+reads content *better* than surya (GLM-OCR 0.0236 vs 0.0366) and falls apart on near-empty pages
+(GLM-OCR 26.93). On a collection with plates and blanks — most real collections — that trade is the
+finding, and it is invisible in the headline.
+
+**Provenance is not symmetric, so this is a comparison and not a merged board.** RESULTS.md's
+*What counts as a score* requires inference the FineBooks team ran themselves under a pinned image
+and model revision; a hosted API cannot attest quantization or serving configuration. Our Mistral
+and Datalab rows are hosted and could not join that board on those terms. `surya-ocr-2` is the one
+row we serve ourselves — and even it is the F16 GGUF through llama.cpp on Apple Silicon Metal,
+where upstream serves bfloat16 through vLLM on CUDA. Both are 16-bit weights rather than a lossy
+quantization, but the kernels differ and CER is sensitive to that.
 
 ## Engines
 
