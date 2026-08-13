@@ -130,7 +130,8 @@ itself is visibly lossy. That is a corpus property, not a model finding.
 
 ## Interleaved with the published board
 
-Our rows against the 14 models in the pinned harness's [RESULTS.md](harness/RESULTS.md), ranked
+Our rows against the 14 models in the pinned harness's
+[RESULTS.md](https://github.com/finebooks/bhl-ocr-eval/blob/cce90c5cebb450303463d9fd6b7f4a893c209392/RESULTS.md), ranked
 together on the same headline. Same ground truth, same page set (`411a92e4a0e4`), same frozen
 scorer 3.0 / normalizer `2026-07-20a` — which is the entire reason the pin exists. **Ours in bold.**
 
