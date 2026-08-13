@@ -32,6 +32,8 @@ Two contracts here are load-bearing and easy to get wrong:
 """
 from __future__ import annotations
 
+import contextlib
+import datetime
 import json
 import os
 import pathlib
@@ -101,6 +103,96 @@ class Checkpoint:
         if self._handle is not None:
             self._handle.close()
             self._handle = None
+
+
+# ---------------------------------------------------------------------------
+# Wall clock
+# ---------------------------------------------------------------------------
+
+
+class WallClock:
+    """Producer wall clock accumulated ACROSS passes, not just the current invocation.
+
+    Producers used to time one invocation and write that as `wall_clock_s`. Because these runs are
+    resumable, a run finished over several passes reported only its LAST pass: `mistral-ocr-2512`
+    recorded 5.5 s for 2,165 pages, having found every page already cached. That is not a slightly
+    low number, it is a meaningless one, and nothing in the artifact said so — which is exactly the
+    kind of quiet wrongness the checkpoint contract elsewhere in this file exists to prevent.
+
+    So each pass appends its own duration to a sidecar next to the checkpoint, and the provenance
+    reports the sum plus the per-pass breakdown. Append-only and fsynced for the same reason the
+    checkpoint is: an interrupted write can only truncate the final line, which `load` drops.
+
+    A pass that raises is still recorded. A crashed pass consumed real wall clock, and a total that
+    silently omitted it would understate what the run cost.
+
+        clock = common.WallClock(out_dir / "passes.jsonl")
+        with clock.pass_():
+            ...run the pages...
+        provenance["wall_clock_s"] = clock.total_s
+    """
+
+    def __init__(self, path):
+        self.path = pathlib.Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def load(self) -> list[dict]:
+        """Every recorded pass, oldest first. A torn trailing line is dropped."""
+        passes: list[dict] = []
+        if not self.path.exists():
+            return passes
+        with self.path.open("r", encoding="utf-8") as handle:
+            for line in handle:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError:
+                    print(f"  passes: discarding unparseable line in {self.path}", flush=True)
+                    continue
+                if isinstance(record, dict) and "elapsed_s" in record:
+                    passes.append(record)
+        return passes
+
+    @property
+    def total_s(self) -> float | None:
+        """Cumulative seconds across every recorded pass, or None if that is not knowable.
+
+        None rather than 0.0 when a pass is marked `elapsed_unknown`: a run migrated from before
+        this existed has real but unrecoverable time in it, and reporting a confident total that
+        omits it would repeat the bug this class fixes.
+        """
+        passes = self.load()
+        if not passes:
+            return None
+        if any(record.get("elapsed_unknown") for record in passes):
+            return None
+        return round(sum(float(record["elapsed_s"]) for record in passes), 1)
+
+    def append(self, record: dict) -> None:
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+
+    @contextlib.contextmanager
+    def pass_(self):
+        """Time one pass and record it, whether it succeeds or raises."""
+        started = time.monotonic()
+        started_at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+        crashed = None
+        try:
+            yield
+        except BaseException as exc:  # recorded, then re-raised untouched
+            crashed = f"{type(exc).__name__}: {exc}"[:200]
+            raise
+        finally:
+            self.append({
+                "started_at": started_at,
+                "elapsed_s": round(time.monotonic() - started, 1),
+                **({"crashed": crashed} if crashed else {}),
+            })
 
 
 # ---------------------------------------------------------------------------

@@ -408,11 +408,12 @@ def main() -> None:
 
     from surya.recognition import RecognitionPredictor
 
-    started = time.monotonic()
-    predictor = RecognitionPredictor()
-    checkpoint = common.Checkpoint(checkpoint_path)
-    run_batches(streamed(), predictor, checkpoint=checkpoint, batch_size=args.batch_size,
-                retry_errors=args.retry_errors)
+    clock = common.WallClock(out_path.parent / "passes.jsonl")
+    with clock.pass_():
+        predictor = RecognitionPredictor()
+        checkpoint = common.Checkpoint(checkpoint_path)
+        run_batches(streamed(), predictor, checkpoint=checkpoint, batch_size=args.batch_size,
+                    retry_errors=args.retry_errors)
     common.finalize(checkpoint, [row["PageID"] for row in index], model=MODEL, out_path=out_path)
 
     # A page whose every block was skipped reads as "the model saw no text here". Sometimes that is
@@ -459,7 +460,11 @@ def main() -> None:
         "pages_without_text": blank,
         "blocks_skipped": total_skipped,
         "platform": f"{platform.system()} {platform.release()} {platform.machine()}",
-        "wall_clock_s": round(time.monotonic() - started, 1),
+        "wall_clock_s": clock.total_s,
+        "wall_clock_passes": clock.load(),
+        "wall_clock_note": "cumulative across every pass of this run, not just the last "
+                           "invocation; null means one pass predates per-pass timing and the "
+                           "total is not recoverable",
         "harness_pin": _harness_pin(),
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"run provenance -> {meta_path}")

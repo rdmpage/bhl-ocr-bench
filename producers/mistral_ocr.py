@@ -252,14 +252,15 @@ def main() -> None:
             if page["PageID"] in wanted:
                 yield page
 
-    started = time.monotonic()
+    clock = common.WallClock(out_path.parent / "passes.jsonl")
     checkpoint = common.Checkpoint(checkpoint_path)
-    common.run_pages(
-        streamed(), ocr_page, checkpoint=checkpoint, workers=args.workers, executor="thread",
-        initializer=_init_worker,
-        initargs=(api_key, model, args.timeout, args.max_attempts, args.base_url),
-        retry_errors=args.retry_errors,
-    )
+    with clock.pass_():
+        common.run_pages(
+            streamed(), ocr_page, checkpoint=checkpoint, workers=args.workers, executor="thread",
+            initializer=_init_worker,
+            initargs=(api_key, model, args.timeout, args.max_attempts, args.base_url),
+            retry_errors=args.retry_errors,
+        )
     common.finalize(checkpoint, [row["PageID"] for row in index], model=args.model_label,
                     out_path=out_path)
 
@@ -279,7 +280,11 @@ def main() -> None:
         "dataset_resolved_revision": revision,
         "postproc_version": "0",
         "postprocessing": "none — raw pages[].markdown as returned",
-        "wall_clock_s": round(time.monotonic() - started, 1),
+        "wall_clock_s": clock.total_s,
+        "wall_clock_passes": clock.load(),
+        "wall_clock_note": "cumulative across every pass of this run, not just the last "
+                           "invocation; null means one pass predates per-pass timing and the "
+                           "total is not recoverable",
         "harness_pin": _harness_pin(),
     }, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"run provenance -> {meta_path}")

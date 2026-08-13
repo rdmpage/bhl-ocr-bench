@@ -203,3 +203,71 @@ def test_finalize_keeps_a_deliberate_empty_string(tmp_path):
                             out_path=tmp_path / "run.parquet")
     assert frame.markdown[0] == ""
     assert frame.error[0] is None
+
+
+# --------------------------------------------------------------------------- wall clock
+
+
+def test_wall_clock_sums_across_passes(tmp_path):
+    """The bug this class exists for: a resumed run used to report only its final pass, so
+    mistral-ocr-2512 recorded 5.5s for 2,165 pages."""
+    clock = common.WallClock(tmp_path / "passes.jsonl")
+    clock.append({"started_at": "2026-08-01T00:00:00+00:00", "elapsed_s": 100.0})
+    clock.append({"started_at": "2026-08-02T00:00:00+00:00", "elapsed_s": 20.5})
+    assert clock.total_s == 120.5
+    assert len(clock.load()) == 2
+
+
+def test_wall_clock_with_no_passes_is_none_not_zero(tmp_path):
+    """None says "not measured"; 0.0 would claim the run took no time."""
+    assert common.WallClock(tmp_path / "passes.jsonl").total_s is None
+
+
+def test_wall_clock_context_manager_records_one_pass(tmp_path):
+    clock = common.WallClock(tmp_path / "passes.jsonl")
+    with clock.pass_():
+        pass
+    passes = clock.load()
+    assert len(passes) == 1
+    assert passes[0]["elapsed_s"] >= 0
+    assert "started_at" in passes[0]
+    assert clock.total_s is not None
+
+
+def test_a_crashed_pass_is_still_recorded_and_the_error_propagates(tmp_path):
+    """A crashed pass burned real wall clock. Omitting it would understate the run's cost, and
+    swallowing the exception would be far worse."""
+    clock = common.WallClock(tmp_path / "passes.jsonl")
+    with pytest.raises(RuntimeError, match="boom"), clock.pass_():
+        raise RuntimeError("boom")
+    passes = clock.load()
+    assert len(passes) == 1
+    assert "boom" in passes[0]["crashed"]
+
+
+def test_a_pass_of_unknown_length_makes_the_total_unknown(tmp_path):
+    """A run migrated from before per-pass timing has real but unrecoverable time in it. A
+    confident total that quietly omitted it would repeat the original bug."""
+    clock = common.WallClock(tmp_path / "passes.jsonl")
+    clock.append({"started_at": "unknown", "elapsed_s": 0.0, "elapsed_unknown": True})
+    clock.append({"started_at": "2026-08-02T00:00:00+00:00", "elapsed_s": 30.0})
+    assert clock.total_s is None
+    assert len(clock.load()) == 2
+
+
+def test_wall_clock_survives_a_torn_final_line(tmp_path):
+    path = tmp_path / "passes.jsonl"
+    clock = common.WallClock(path)
+    clock.append({"started_at": "2026-08-01T00:00:00+00:00", "elapsed_s": 10.0})
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write('{"started_at": "2026-08-0')
+    assert clock.total_s == 10.0
+
+
+def test_wall_clock_ignores_records_without_an_elapsed_field(tmp_path):
+    path = tmp_path / "passes.jsonl"
+    clock = common.WallClock(path)
+    with path.open("w", encoding="utf-8") as handle:
+        handle.write('{"note": "not a pass record"}\n')
+    clock.append({"started_at": "2026-08-01T00:00:00+00:00", "elapsed_s": 7.0})
+    assert clock.total_s == 7.0
