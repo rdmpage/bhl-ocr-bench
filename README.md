@@ -17,11 +17,10 @@ invalidates that comparison, so the pin is the point.
     harness/        pinned finebooks/bhl-ocr-eval — READ ONLY
     benchmark/      build_benchmark.py -> benchmark/gt (the local scoring GT)
     producers/      one adapter per engine; common.py is the shared plumbing
-    scripts/        score.sh — the scoring invocation, with its non-obvious flags
-                    bake_board.sh — re-score every row, refresh provenance/, rebuild the board
+    scripts/        board.sh — the one entry point: score rows, then rebuild the board
     runs/           raw OCR parquet + per-page checkpoints (gitignored)
     scorecards/     per-page scorecards from the harness (gitignored)
-    provenance/     tracked run-provenance snapshot, copied from runs/ by bake_board.sh
+    provenance/     tracked run-provenance snapshot, copied from runs/ by board.sh
     boards/         leaderboard.json, built from every scorecard at once
 
 ## The producer contract
@@ -64,17 +63,23 @@ to 26.93), so filtering them would remove the finding.
 
     uv run benchmark/build_benchmark.py          # once: builds benchmark/gt
     uv run producers/tesseract5.py --out runs/tesseract-5/run.parquet
-    scripts/score.sh runs/tesseract-5
+    scripts/board.sh tesseract-5                 # score that row, then rebuild the board
 
 `--limit N` smoke-tests an adapter; such a run is deliberately **not** scoreable, because the page
 set will not match the benchmark and the scorer fails closed on an incomplete set.
 
-`scripts/score.sh` scores one run. Once a new row exists, `scripts/bake_board.sh` rebuilds
-everything downstream of the cached OCR — it re-scores all six rows, refreshes `provenance/` from
-the run dirs, and regenerates `boards/leaderboard.json`. It runs no inference, so it is a pure
-function of (cached raw output, run provenance, pinned scorer): **re-running it must not move a
-number.** Re-score before baking rather than baking alone, because each scorecard embeds the run
-provenance it was scored against and the board reads it back out from there.
+`scripts/board.sh` is the only entry point for everything downstream of the cached OCR. Named rows
+score just those (~30 s each for tesseract, plus the bake); no arguments re-scores all six.
+Either way it refreshes `provenance/` from the run dirs and regenerates `boards/leaderboard.json`,
+and `--list` prints the registered rows. It runs no inference, so it is a pure function of (cached
+raw output, run provenance, pinned scorer): **re-running it must not move a number** — re-scoring
+`tesseract-5` and rebaking leaves `boards/leaderboard.json` byte-identical.
+
+Scoring a row is not separable from baking, and that is the point: each scorecard embeds the run
+provenance it was scored against, and the board reads it back out from there, so a bake that
+skipped re-scoring would republish stale provenance. Adding an engine means adding it to the
+`ROWS` registry at the top of the script — a run that is not a declared board row cannot be
+scored, and since smoke runs are not scoreable anyway, every scoreable run is a board row.
 
 ## Why benchmark/gt exists
 
