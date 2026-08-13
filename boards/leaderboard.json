@@ -66,7 +66,18 @@
           "workers": 12
         },
         "served_versions": null,
-        "wall_clock_s": 2083.1,
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 0.0,
+            "elapsed_unknown": true,
+            "migrated": true,
+            "migration_note": "back-filled before per-pass timing existed: the recorded 2083.1s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
+            "recorded_final_pass_s": 2083.1,
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": null,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/datalab-balanced/run.parquet",
@@ -106,7 +117,18 @@
         },
         "request_settings_note": "disable_image_captions and additional_config.keep_page{header,footer}_in_output are undocumented form fields; captions are figure descriptions rather than transcription, and the furniture flags set this row's policy to match the verbatim rows (see DESIGN.md, 'The furniture trade-off')",
         "served_versions": null,
-        "wall_clock_s": 2233.5,
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 0.0,
+            "elapsed_unknown": true,
+            "migrated": true,
+            "migration_note": "back-filled before per-pass timing existed: the recorded 2233.5s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
+            "recorded_final_pass_s": 2233.5,
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": null,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/datalab-balanced-configured/run.parquet",
@@ -138,7 +160,18 @@
           "timeout_s": 120.0,
           "workers": 2
         },
-        "wall_clock_s": 5.5,
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 0.0,
+            "elapsed_unknown": true,
+            "migrated": true,
+            "migration_note": "back-filled before per-pass timing existed: the recorded 5.5s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2170 checkpoint lines, 2165 unique pages)",
+            "recorded_final_pass_s": 5.5,
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": null,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/mistral-ocr-2512/run.parquet",
@@ -170,7 +203,18 @@
           "timeout_s": 120.0,
           "workers": 8
         },
-        "wall_clock_s": 777.8,
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 0.0,
+            "elapsed_unknown": true,
+            "migrated": true,
+            "migration_note": "back-filled before per-pass timing existed: the recorded 777.8s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
+            "recorded_final_pass_s": 777.8,
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": null,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/mistral-ocr-4-1/run.parquet",
@@ -181,6 +225,65 @@
           "key_column": "PageID",
           "model_column": "model",
           "local_file_sha256": "e9ba651ff28550716ff9e366b2d65806802d78ea4bbc22238647ed68e2f3db77"
+        }
+      },
+      "surya-ocr-2": {
+        "batch_note": "batching is a throughput setting only. Measured 1->6 2.45x, 6->12 2.62x, 12->24 1.59x, and at every step the concatenated block HTML was byte-identical to the smaller grouping over the same pages, so batch size cannot move the score",
+        "batch_size": 24,
+        "blocks_skipped": 1747,
+        "dataset": "finebooks/bhl-impact-gt",
+        "dataset_resolved_revision": "b7bda5fac0471d6d2237360abc799c6d13559465",
+        "environment": {
+          "llama_cpp": "version: 10360 (48d22e295)",
+          "llama_cpp_ngl": 99,
+          "torch": "2.13.0",
+          "torch_device": "mps"
+        },
+        "harness_pin": "cce90c5cebb450303463d9fd6b7f4a893c209392",
+        "inference_backend": "llamacpp",
+        "model": "surya-ocr-2",
+        "note": "model-native OCR mode (RecognitionPredictor, full_page=True)",
+        "pages_without_text": 352,
+        "platform": "Darwin 25.6.0 arm64",
+        "postproc_version": "0",
+        "postprocessing": "block HTML -> plain text, reproducing the upstream driver's serialize_pages exactly: reading order, drop skipped/empty blocks, BeautifulSoup.get_text(' ', strip=True), join with newlines. Required rather than cosmetic: surya-ocr-2 is absent from the harness normalize_outputs REGISTRY, and the diplomatic scoring lane does not strip markup, so raw HTML would be scored as inserted characters.",
+        "producer": "bhl-ocr-bench producers/surya_ocr2.py",
+        "prompt": null,
+        "serving_caveat": "Self-hosted, so the weights and the serving stack are both pinned above \u2014 but this is NOT the configuration the published board used. Upstream (uv-scripts/ocr/surya-ocr.py) serves surya-ocr-2 with vLLM at dtype=bfloat16 on CUDA; this is the F16 GGUF through llama.cpp on Apple Silicon Metal. Both are 16-bit weights, not a lossy quantization, but the kernels differ and RESULTS.md notes CER is sensitive to serving configuration.",
+        "surya_version": "0.22.1",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 41075.5,
+            "migrated": true,
+            "migration_note": "back-filled from the pre-existing wall_clock_s; observed start to finish in one invocation; checkpoint holds exactly one record per page (2165 lines, 2165 unique PageIDs, no supersedes)",
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": 41075.5,
+        "weights": {
+          "architecture": "qwen35",
+          "bytes": 1266400864,
+          "file": "surya-2.gguf",
+          "file_type": 1,
+          "file_type_name": "MOSTLY_F16",
+          "local_mmproj_path": "/Users/rpage/.cache/huggingface/hub/models--datalab-to--surya-ocr-2-gguf/snapshots/6a3a4c30e5e74446d4f8b6afd05b2f2da970f470/surya-2-mmproj.gguf",
+          "local_model_path": "/Users/rpage/.cache/huggingface/hub/models--datalab-to--surya-ocr-2-gguf/snapshots/6a3a4c30e5e74446d4f8b6afd05b2f2da970f470/surya-2.gguf",
+          "mmproj_file": "surya-2-mmproj.gguf",
+          "repo": "datalab-to/surya-ocr-2-gguf",
+          "revision": "6a3a4c30e5e74446d4f8b6afd05b2f2da970f470",
+          "size_label": "632M"
+        },
+        "harness": {
+          "runner": "score_dataset",
+          "ocr_source": "/Users/rpage/Development/bhl-ocr-bench/runs/surya-ocr-2/run.parquet",
+          "gt_source": "/Users/rpage/Development/bhl-ocr-bench/benchmark/gt",
+          "gt_requested_revision": null,
+          "gt_resolved_revision": "local:7d819d2e04913cea",
+          "ocr_column": "markdown",
+          "key_column": "PageID",
+          "model_column": "model",
+          "local_file_sha256": "da7bdfad68068513e3b20329734b4ed1fed3090d4a125c7dc294ab4204db4b20"
         }
       },
       "tesseract-5": {
@@ -208,6 +311,18 @@
         "producer": "bhl-ocr-bench producers/tesseract5.py",
         "prompt": null,
         "tesseract_version": "5.5.2",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_passes": [
+          {
+            "elapsed_s": 0.0,
+            "elapsed_unknown": true,
+            "migrated": true,
+            "migration_note": "back-filled before per-pass timing existed: no wall_clock_s was recorded",
+            "recorded_final_pass_s": null,
+            "started_at": "unknown (migrated)"
+          }
+        ],
+        "wall_clock_s": null,
         "workers": 7,
         "harness": {
           "runner": "score_dataset",
@@ -620,6 +735,105 @@
         }
       }
     },
+    "surya-ocr-2": {
+      "n": 2165,
+      "submitted": 2165,
+      "errors": 0,
+      "truncated": 0,
+      "producer_errors": 0,
+      "truncation_rate": 0.0,
+      "missing": 0,
+      "extra": 0,
+      "benchmark_page_set_match": true,
+      "eligible": true,
+      "cer_diplomatic_micro": 0.0521,
+      "cer_reading_micro": 0.0391,
+      "cer_ci": [
+        0.0321,
+        0.0471
+      ],
+      "cer_reading_median": 0.0182,
+      "recall_micro": 0.9666,
+      "recall_matched": 478400,
+      "recall_reference": 494906,
+      "over_extraction_micro": 0.0366,
+      "over_extraction_extra": 18366,
+      "over_extraction_output": 501244,
+      "script_match": 0.9962,
+      "furniture_global_token_recall_micro": 0.8813,
+      "furniture_global_token_recall_matched": 4241,
+      "furniture_global_token_recall_reference": 4812,
+      "by_language": {},
+      "by_volume": {
+        "birdsofgreatbrit02butl": 0.0342,
+        "conchologiaiconi05reev": 0.0489,
+        "daschitinskelett00prel": 0.0315,
+        "histoirenaturell10cuvi": 0.0312,
+        "pisciumquerelaee00sche": 0.1341,
+        "trudyrusskagoent161881russ": 0.0325
+      },
+      "by_script": {
+        "latin": 0.9962
+      },
+      "by_sample_stratum": {
+        "content": {
+          "submitted": 1737,
+          "n": 1737,
+          "errors": 0,
+          "cer_reading_micro": 0.0366,
+          "recall_micro": 0.9671,
+          "recall_matched": 478062,
+          "recall_reference": 494316,
+          "over_extraction_micro": 0.0349,
+          "over_extraction_extra": 17437,
+          "over_extraction_output": 499919
+        },
+        "sparse_blank": {
+          "submitted": 428,
+          "n": 428,
+          "errors": 0,
+          "cer_reading_micro": 2.6365,
+          "recall_micro": 0.5729,
+          "recall_matched": 338,
+          "recall_reference": 590,
+          "over_extraction_micro": 0.7011,
+          "over_extraction_extra": 929,
+          "over_extraction_output": 1325
+        }
+      },
+      "region_global_token_recall": {
+        "caption": {
+          "rate": 0.6916,
+          "matched": 1617,
+          "reference": 2338
+        },
+        "footnote": {
+          "rate": 0.9869,
+          "matched": 8232,
+          "reference": 8341
+        },
+        "page_footer": {
+          "rate": 0.6894,
+          "matched": 848,
+          "reference": 1230
+        },
+        "page_header": {
+          "rate": 0.9475,
+          "matched": 3395,
+          "reference": 3583
+        },
+        "section_header": {
+          "rate": 0.9787,
+          "matched": 10516,
+          "reference": 10745
+        },
+        "text": {
+          "rate": 0.9672,
+          "matched": 458043,
+          "reference": 473553
+        }
+      }
+    },
     "tesseract-5": {
       "n": 2165,
       "submitted": 2165,
@@ -721,6 +935,7 @@
     }
   },
   "order": [
+    "surya-ocr-2",
     "mistral-ocr-2512",
     "datalab-balanced-configured",
     "tesseract-5",
@@ -728,6 +943,7 @@
     "mistral-ocr-4-1"
   ],
   "eligible_order": [
+    "surya-ocr-2",
     "mistral-ocr-2512",
     "datalab-balanced-configured",
     "tesseract-5",

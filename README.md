@@ -18,8 +18,11 @@ invalidates that comparison, so the pin is the point.
     benchmark/      build_benchmark.py -> benchmark/gt (the local scoring GT)
     producers/      one adapter per engine; common.py is the shared plumbing
     scripts/        score.sh — the scoring invocation, with its non-obvious flags
+                    bake_board.sh — re-score every row, refresh provenance/, rebuild the board
     runs/           raw OCR parquet + per-page checkpoints (gitignored)
     scorecards/     per-page scorecards from the harness (gitignored)
+    provenance/     tracked run-provenance snapshot, copied from runs/ by bake_board.sh
+    boards/         leaderboard.json, built from every scorecard at once
 
 ## The producer contract
 
@@ -36,7 +39,7 @@ write a parquet — and every adapter writes the **same schema**:
 
 Engine-specific detail goes in `producer_meta` so it never widens the schema.
 
-Two rules in `producers/common.py` are load-bearing:
+Three rules in `producers/common.py` are load-bearing:
 
 - **Checkpoint and resume per page.** An append-only JSONL fsynced after every page. A crash costs
   one page, not the run. This is not a nicety: scoring **fails closed**, so one errored or missing
@@ -45,6 +48,13 @@ Two rules in `producers/common.py` are load-bearing:
   *string* for a `__ERR__` sentinel — it never reads a sibling `error` column. A producer that
   writes `""` on failure gets that page scored as "the engine read nothing", which quietly
   *improves* its apparent score on pages where it actually crashed.
+- **Wall clock accumulates across passes.** Because runs resume, timing one invocation reports only
+  the *last* pass: `mistral-ocr-2512` recorded 5.5 s for 2,165 pages, having found every page
+  already cached. `WallClock` appends each pass to a `passes.jsonl` beside the checkpoint and sums
+  them. A pass that raises is still recorded — a crashed pass burned real time. Runs made before
+  this existed report `wall_clock_s: null` rather than a confident total that omits the passes it
+  cannot see; only `surya-ocr-2` (41,075 s, observed start to finish in one invocation) carries a
+  trustworthy number today.
 
 All 2,165 pages are sent, including the 428 sparse/blank ones. Hallucination on near-empty pages is
 one of the sharpest differentiators between engines (the board's sparse CER column ranges from 1.79
@@ -58,6 +68,13 @@ to 26.93), so filtering them would remove the finding.
 
 `--limit N` smoke-tests an adapter; such a run is deliberately **not** scoreable, because the page
 set will not match the benchmark and the scorer fails closed on an incomplete set.
+
+`scripts/score.sh` scores one run. Once a new row exists, `scripts/bake_board.sh` rebuilds
+everything downstream of the cached OCR — it re-scores all six rows, refreshes `provenance/` from
+the run dirs, and regenerates `boards/leaderboard.json`. It runs no inference, so it is a pure
+function of (cached raw output, run provenance, pinned scorer): **re-running it must not move a
+number.** Re-score before baking rather than baking alone, because each scorecard embeds the run
+provenance it was scored against and the board reads it back out from there.
 
 ## Why benchmark/gt exists
 

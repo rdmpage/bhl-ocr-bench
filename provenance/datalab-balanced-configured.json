@@ -25,5 +25,16 @@
   },
   "request_settings_note": "disable_image_captions and additional_config.keep_page{header,footer}_in_output are undocumented form fields; captions are figure descriptions rather than transcription, and the furniture flags set this row's policy to match the verbatim rows (see DESIGN.md, 'The furniture trade-off')",
   "served_versions": null,
-  "wall_clock_s": 2233.5
+  "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+  "wall_clock_passes": [
+    {
+      "elapsed_s": 0.0,
+      "elapsed_unknown": true,
+      "migrated": true,
+      "migration_note": "back-filled before per-pass timing existed: the recorded 2233.5s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
+      "recorded_final_pass_s": 2233.5,
+      "started_at": "unknown (migrated)"
+    }
+  ],
+  "wall_clock_s": null
 }
