@@ -30,5 +30,5 @@ url = "https://pypi.org/simple"
 default = true
 
 [tool.pytest.ini_options]
-pythonpath = ["producers"]
+pythonpath = ["producers", "scripts"]
 testpaths = ["tests"]

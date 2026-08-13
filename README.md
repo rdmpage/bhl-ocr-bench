@@ -18,6 +18,7 @@ invalidates that comparison, so the pin is the point.
     benchmark/      build_benchmark.py -> benchmark/gt (the local scoring GT)
     producers/      one adapter per engine; common.py is the shared plumbing
     scripts/        board.sh — the one entry point: score rows, then rebuild the board
+                    scrub_local_paths.py — keeps one laptop's paths out of the artifacts
     runs/           raw OCR parquet + per-page checkpoints (gitignored)
     scorecards/     per-page scorecards from the harness (gitignored)
     provenance/     tracked run-provenance snapshot, copied from runs/ by board.sh
@@ -70,8 +71,10 @@ set will not match the benchmark and the scorer fails closed on an incomplete se
 
 `scripts/board.sh` is the only entry point for everything downstream of the cached OCR. Named rows
 score just those (~30 s each for tesseract, plus the bake); no arguments re-scores all six.
-Either way it refreshes `provenance/` from the run dirs and regenerates `boards/leaderboard.json`,
-and `--list` prints the registered rows. It runs no inference, so it is a pure function of (cached
+Either way it refreshes `provenance/` from the run dirs, regenerates `boards/leaderboard.json`, and
+scrubs this machine's paths out of both — the scorer records `ocr_source` / `gt_source` as absolute
+paths, so without that step every bake would put a home directory back into a public repo. `--list`
+prints the registered rows. It runs no inference, so it is a pure function of (cached
 raw output, run provenance, pinned scorer): **re-running it must not move a number** — re-scoring
 `tesseract-5` and rebaking leaves `boards/leaderboard.json` byte-identical.
 

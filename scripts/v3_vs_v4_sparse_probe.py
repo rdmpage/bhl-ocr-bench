@@ -5,10 +5,11 @@ my v4-1 run already covered, and compare raw output volume.
 """
 import pathlib, re, sys
 import pandas as pd
-sys.path.insert(0, "/Users/rpage/Development/bhl-ocr-bench/producers")
+
+BENCH = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BENCH/"producers"))
 import mistral_ocr as M
 
-BENCH = pathlib.Path("/Users/rpage/Development/bhl-ocr-bench")
 gt = pd.read_parquet(BENCH/"benchmark/gt/train.parquet")
 v4 = pd.read_parquet(BENCH/"runs/mistral-ocr-4-1/run.parquet").set_index("PageID")
 snap = pathlib.Path.home()/".cache/huggingface/hub/datasets--finebooks--bhl-impact-gt/snapshots/b7bda5fac0471d6d2237360abc799c6d13559465"

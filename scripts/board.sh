@@ -113,4 +113,10 @@ echo "==> baking board"
 cp "$ROOT/harness/data/leaderboard.json" "$ROOT/boards/leaderboard.json"
 echo "board -> boards/leaderboard.json"
 
+# The scorer records ocr_source/gt_source as absolute paths and the surya producer records where
+# llama.cpp found its weights, so both artifacts carry this machine's home directory into a public
+# repo. Scrub every tracked artifact rather than only the rows just scored, so the pass is
+# self-healing. Idempotent, and it touches nothing but the path prefixes.
+uv run "$ROOT/scripts/scrub_local_paths.py" "$ROOT/boards/leaderboard.json" "$ROOT"/provenance/*.json
+
 git -C "$ROOT/harness" diff --quiet || { echo "ERROR: pinned harness is dirty" >&2; exit 1; }
