@@ -19,21 +19,29 @@
   "omp_thread_limit": 1,
   "platform": "Darwin arm64 (homebrew tesseract, CPU)",
   "postproc_version": "0",
-  "postprocessing": "none \u2014 tesseract-5 is absent from the harness normalize_outputs REGISTRY, so the published row was scored on raw image_to_string output",
+  "postprocessing": "none — tesseract-5 is absent from the harness normalize_outputs REGISTRY, so the published row was scored on raw image_to_string output",
   "producer": "bhl-ocr-bench producers/tesseract5.py",
   "prompt": null,
   "tesseract_version": "5.5.2",
-  "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+  "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
   "wall_clock_passes": [
     {
-      "elapsed_s": 0.0,
-      "elapsed_unknown": true,
+      "elapsed_s": 855.1,
+      "evidence": {
+        "checkpoint_birth_utc": "2026-08-11T17:34:50+00:00",
+        "checkpoint_lines": 2165,
+        "checkpoint_mtime_utc": "2026-08-11T17:49:05+00:00",
+        "checkpoint_span_s": 855.1,
+        "checkpoint_superseded_pages": 0,
+        "checkpoint_unique_pages": 2165,
+        "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+      },
       "migrated": true,
-      "migration_note": "back-filled before per-pass timing existed: no wall_clock_s was recorded",
-      "recorded_final_pass_s": null,
-      "started_at": "unknown (migrated)"
+      "migration_note": "recovered 2026-08-30. No elapsed was ever recorded for this run, so the total comes from the filesystem alone: the checkpoint's birthtime->mtime span is 855.1 s. The checkpoint holds 2165 lines over 2165 unique PageIDs with 0 superseded, i.e. exactly one pass, so the span is the run — no gap between passes can be hiding in it. Single-source: unlike the other recovered rows there is no recorded elapsed to cross-check against, and the true total is a few seconds longer than the span at each end (process start before the first page, parquet write after the last).",
+      "started_at": "2026-08-11T17:34:50+00:00",
+      "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
     }
   ],
-  "wall_clock_s": null,
+  "wall_clock_s": 855.1,
   "workers": 7
 }

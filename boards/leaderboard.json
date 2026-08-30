@@ -66,18 +66,26 @@
           "workers": 12
         },
         "served_versions": null,
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
-            "elapsed_s": 0.0,
-            "elapsed_unknown": true,
+            "elapsed_s": 2083.1,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-11T22:26:43+00:00",
+              "checkpoint_lines": 2165,
+              "checkpoint_mtime_utc": "2026-08-11T23:01:21+00:00",
+              "checkpoint_span_s": 2078.4,
+              "checkpoint_superseded_pages": 0,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled before per-pass timing existed: the recorded 2083.1s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
-            "recorded_final_pass_s": 2083.1,
-            "started_at": "unknown (migrated)"
+            "migration_note": "recovered 2026-08-30. The recorded 2083.1 s timed one invocation; the checkpoint's birthtime->mtime span is 2078.4 s, a 0.23% difference, so that invocation was the whole run \u2014 an earlier pass would have created the checkpoint sooner and widened the span beyond the recorded elapsed. Checkpoint holds 2165 lines over 2165 unique PageIDs (0 superseded), consistent with a single pass. The recorded elapsed is kept as the total because it timed the process; the span is slightly shorter only because the checkpoint is created after startup.",
+            "started_at": "2026-08-11T22:26:43+00:00",
+            "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
           }
         ],
-        "wall_clock_s": null,
+        "wall_clock_s": 2083.1,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "runs/datalab-balanced/run.parquet",
@@ -117,18 +125,26 @@
         },
         "request_settings_note": "disable_image_captions and additional_config.keep_page{header,footer}_in_output are undocumented form fields; captions are figure descriptions rather than transcription, and the furniture flags set this row's policy to match the verbatim rows (see DESIGN.md, 'The furniture trade-off')",
         "served_versions": null,
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
-            "elapsed_s": 0.0,
-            "elapsed_unknown": true,
+            "elapsed_s": 2233.5,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-12T00:17:24+00:00",
+              "checkpoint_lines": 2165,
+              "checkpoint_mtime_utc": "2026-08-12T00:54:33+00:00",
+              "checkpoint_span_s": 2228.7,
+              "checkpoint_superseded_pages": 0,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled before per-pass timing existed: the recorded 2233.5s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
-            "recorded_final_pass_s": 2233.5,
-            "started_at": "unknown (migrated)"
+            "migration_note": "recovered 2026-08-30. The recorded 2233.5 s timed one invocation; the checkpoint's birthtime->mtime span is 2228.7 s, a 0.21% difference, so that invocation was the whole run \u2014 an earlier pass would have created the checkpoint sooner and widened the span beyond the recorded elapsed. Checkpoint holds 2165 lines over 2165 unique PageIDs (0 superseded), consistent with a single pass. The recorded elapsed is kept as the total because it timed the process; the span is slightly shorter only because the checkpoint is created after startup.",
+            "started_at": "2026-08-12T00:17:24+00:00",
+            "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
           }
         ],
-        "wall_clock_s": null,
+        "wall_clock_s": 2233.5,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "runs/datalab-balanced-configured/run.parquet",
@@ -160,18 +176,28 @@
           "timeout_s": 120.0,
           "workers": 2
         },
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
             "elapsed_s": 0.0,
             "elapsed_unknown": true,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-11T21:33:44+00:00",
+              "checkpoint_lines": 2170,
+              "checkpoint_mtime_utc": "2026-08-11T21:53:13+00:00",
+              "checkpoint_span_s": 1168.5,
+              "checkpoint_superseded_pages": 5,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled before per-pass timing existed: the recorded 5.5s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2170 checkpoint lines, 2165 unique pages)",
+            "migration_note": "NOT recovered. The recorded 5.5 s is a resumed pass that found every page cached and is meaningless as a total. The checkpoint's birthtime->mtime span is 1168.5 s, but 2170 lines over 2165 unique PageIDs (5 superseded) prove at least two passes, and the span therefore also contains however long the run sat idle between them. That makes 1168.5 s an UPPER BOUND on the run, not its duration, so wall_clock_s stays null.",
             "recorded_final_pass_s": 5.5,
             "started_at": "unknown (migrated)"
           }
         ],
         "wall_clock_s": null,
+        "wall_clock_upper_bound_s": 1168.5,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "runs/mistral-ocr-2512/run.parquet",
@@ -203,18 +229,26 @@
           "timeout_s": 120.0,
           "workers": 8
         },
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
-            "elapsed_s": 0.0,
-            "elapsed_unknown": true,
+            "elapsed_s": 777.8,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-11T19:12:12+00:00",
+              "checkpoint_lines": 2165,
+              "checkpoint_mtime_utc": "2026-08-11T19:25:08+00:00",
+              "checkpoint_span_s": 776.6,
+              "checkpoint_superseded_pages": 0,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled before per-pass timing existed: the recorded 777.8s timed one invocation, and whether that was the whole run or the tail of a resumed one is not recoverable (2165 checkpoint lines, 2165 unique pages)",
-            "recorded_final_pass_s": 777.8,
-            "started_at": "unknown (migrated)"
+            "migration_note": "recovered 2026-08-30. The recorded 777.8 s timed one invocation; the checkpoint's birthtime->mtime span is 776.6 s, a 0.15% difference, so that invocation was the whole run \u2014 an earlier pass would have created the checkpoint sooner and widened the span beyond the recorded elapsed. Checkpoint holds 2165 lines over 2165 unique PageIDs (0 superseded), consistent with a single pass. The recorded elapsed is kept as the total because it timed the process; the span is slightly shorter only because the checkpoint is created after startup.",
+            "started_at": "2026-08-11T19:12:12+00:00",
+            "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
           }
         ],
-        "wall_clock_s": null,
+        "wall_clock_s": 777.8,
         "harness": {
           "runner": "score_dataset",
           "ocr_source": "runs/mistral-ocr-4-1/run.parquet",
@@ -251,13 +285,23 @@
         "prompt": null,
         "serving_caveat": "Self-hosted, so the weights and the serving stack are both pinned above \u2014 but this is NOT the configuration the published board used. Upstream (uv-scripts/ocr/surya-ocr.py) serves surya-ocr-2 with vLLM at dtype=bfloat16 on CUDA; this is the F16 GGUF through llama.cpp on Apple Silicon Metal. Both are 16-bit weights, not a lossy quantization, but the kernels differ and RESULTS.md notes CER is sensitive to serving configuration.",
         "surya_version": "0.22.1",
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
             "elapsed_s": 41075.5,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-12T21:50:37+00:00",
+              "checkpoint_lines": 2165,
+              "checkpoint_mtime_utc": "2026-08-13T09:08:52+00:00",
+              "checkpoint_span_s": 40695.5,
+              "checkpoint_superseded_pages": 0,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled from the pre-existing wall_clock_s; observed start to finish in one invocation; checkpoint holds exactly one record per page (2165 lines, 2165 unique PageIDs, no supersedes)",
-            "started_at": "unknown (migrated)"
+            "migration_note": "recovered 2026-08-30. The recorded 41075.5 s timed one invocation; the checkpoint's birthtime->mtime span is 40695.5 s, a 0.93% difference, so that invocation was the whole run \u2014 an earlier pass would have created the checkpoint sooner and widened the span beyond the recorded elapsed. Checkpoint holds 2165 lines over 2165 unique PageIDs (0 superseded), consistent with a single pass. The recorded elapsed is kept as the total because it timed the process; the span is slightly shorter only because the checkpoint is created after startup.",
+            "started_at": "2026-08-12T21:50:37+00:00",
+            "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
           }
         ],
         "wall_clock_s": 41075.5,
@@ -311,18 +355,26 @@
         "producer": "bhl-ocr-bench producers/tesseract5.py",
         "prompt": null,
         "tesseract_version": "5.5.2",
-        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation; null means one pass predates per-pass timing and the total is not recoverable",
+        "wall_clock_note": "cumulative across every pass of this run, not just the last invocation. Totals marked `migrated` were recovered on 2026-08-30 from the checkpoint's filesystem timestamps rather than timed live; see each pass's migration_note and evidence. null means the passes cannot be separated from the idle time between them, and only an upper bound is knowable.",
         "wall_clock_passes": [
           {
-            "elapsed_s": 0.0,
-            "elapsed_unknown": true,
+            "elapsed_s": 855.1,
+            "evidence": {
+              "checkpoint_birth_utc": "2026-08-11T17:34:50+00:00",
+              "checkpoint_lines": 2165,
+              "checkpoint_mtime_utc": "2026-08-11T17:49:05+00:00",
+              "checkpoint_span_s": 855.1,
+              "checkpoint_superseded_pages": 0,
+              "checkpoint_unique_pages": 2165,
+              "method": "macOS st_birthtime -> st_mtime on runs/<dir>/checkpoint.jsonl, which is append-only and fsynced after every page; the span therefore brackets every pass that wrote to it. Valid only because the file was never deleted and recreated between passes."
+            },
             "migrated": true,
-            "migration_note": "back-filled before per-pass timing existed: no wall_clock_s was recorded",
-            "recorded_final_pass_s": null,
-            "started_at": "unknown (migrated)"
+            "migration_note": "recovered 2026-08-30. No elapsed was ever recorded for this run, so the total comes from the filesystem alone: the checkpoint's birthtime->mtime span is 855.1 s. The checkpoint holds 2165 lines over 2165 unique PageIDs with 0 superseded, i.e. exactly one pass, so the span is the run \u2014 no gap between passes can be hiding in it. Single-source: unlike the other recovered rows there is no recorded elapsed to cross-check against, and the true total is a few seconds longer than the span at each end (process start before the first page, parquet write after the last).",
+            "started_at": "2026-08-11T17:34:50+00:00",
+            "started_at_note": "checkpoint birthtime; the pass began moments earlier, before the first page was written"
           }
         ],
-        "wall_clock_s": null,
+        "wall_clock_s": 855.1,
         "workers": 7,
         "harness": {
           "runner": "score_dataset",

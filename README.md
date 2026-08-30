@@ -51,14 +51,53 @@ Three rules in `producers/common.py` are load-bearing:
 - **Wall clock accumulates across passes.** Because runs resume, timing one invocation reports only
   the *last* pass: `mistral-ocr-2512` recorded 5.5 s for 2,165 pages, having found every page
   already cached. `WallClock` appends each pass to a `passes.jsonl` beside the checkpoint and sums
-  them. A pass that raises is still recorded — a crashed pass burned real time. Runs made before
-  this existed report `wall_clock_s: null` rather than a confident total that omits the passes it
-  cannot see; only `surya-ocr-2` (41,075 s, observed start to finish in one invocation) carries a
-  trustworthy number today.
+  them. A pass that raises is still recorded — a crashed pass burned real time. A run whose passes
+  cannot be separated from the idle time between them reports `wall_clock_s: null` rather than a
+  confident total.
 
 All 2,165 pages are sent, including the 428 sparse/blank ones. Hallucination on near-empty pages is
 one of the sharpest differentiators between engines (the board's sparse CER column ranges from 1.79
 to 26.93), so filtering them would remove the finding.
+
+## How long each run took
+
+Five of the six rows carry a wall-clock total. They were not all timed live: the pre-`WallClock`
+runs were **recovered on 2026-08-30 from the checkpoint's filesystem timestamps**. The checkpoint is
+append-only and fsynced after every page, so its `st_birthtime` → `st_mtime` span brackets every
+pass that ever wrote to it — which settles the question the earlier back-fill could not answer. An
+invocation whose recorded elapsed *equals* that span cannot have been preceded by another pass,
+because an earlier pass would have created the checkpoint sooner and widened the span. Each pass
+record in `provenance/*.json` carries the birthtime, the mtime, the span and the page bookkeeping it
+was judged on.
+
+| row | wall clock | pages/h | s/page | concurrency | basis |
+|---|---:|---:|---:|---|---|
+| `mistral-ocr-4-1` | 777.8 s (13.0 min) | 10,022 | 0.36 | 8 workers, hosted | recorded; span 776.6 s agrees to 0.15% |
+| `tesseract-5` | 855.1 s (14.3 min) | 9,114 | 0.39 | 7 workers, local CPU | span only — single pass, no recorded elapsed |
+| `mistral-ocr-2512` | *null* (≤ 1,168.5 s) | — | — | 2 workers, hosted | ≥2 passes; span is an upper bound, not a duration |
+| `datalab-balanced-apidefault` | 2,083.1 s (34.7 min) | 3,742 | 0.96 | 12 workers, hosted | recorded; span 2,078.4 s agrees to 0.23% |
+| `datalab-balanced-configured` | 2,233.5 s (37.2 min) | 3,490 | 1.03 | 12 workers, hosted | recorded; span 2,228.7 s agrees to 0.21% |
+| `surya-ocr-2` | 41,075.5 s (11.4 h) | 190 | 18.97 | batch 24, M1 Pro MPS | recorded start to finish in one invocation |
+
+Two caveats on the table. **`mistral-ocr-2512` stays null on purpose**: its checkpoint holds 2,170
+lines over 2,165 unique pages, so at least two passes ran, and the span between them contains
+however long the run sat idle. 1,168.5 s is an upper bound, recorded as `wall_clock_upper_bound_s`
+rather than promoted to a total. **`tesseract-5` is single-source**: nothing was ever recorded for
+it, so unlike the other recovered rows there is no elapsed to cross-check the span against — but its
+checkpoint is exactly one pass with no superseded pages, so no hidden gap can be inside it.
+
+`pages/h` and `s/page` are **throughput, not engine latency**, and the concurrency column is why they
+must not be read as a speed ranking: the rows differ by up to 12× in workers. Where per-page latency
+was actually measured it is much higher than the wall-clock division suggests — `surya-ocr-2` records
+a real per-page time in its checkpoint (mean 18.94 s, median 18.64, range 8.51–38.36, summing to
+41,000.2 s and so independently confirming its total), and `datalab` records a poll count at a 2 s
+interval that puts server-side latency near 4 s per page against a 0.96 s wall-clock slot.
+
+The comparison the table does support is **self-hosted versus hosted**: `surya-ocr-2` took 11.4 hours
+on a laptop to do what every hosted engine did in 13–37 minutes, and 48× the wall clock `tesseract-5`
+needed for the same corpus on the same hardware. Note also that `mistral-ocr-2512` is not slower than
+`mistral-ocr-4-1` — it ran at `workers: 2` against the other's 8, on the same endpoint.
+
 
 ## Running it
 
