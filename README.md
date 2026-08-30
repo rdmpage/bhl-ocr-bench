@@ -1,6 +1,28 @@
 # bhl-ocr-bench
 
-Producer adapters that feed OCR engines into the [FineBooks IMPACT-BHL](https://huggingface.co/datasets/finebooks/bhl-impact-gt)
+This repo is inspired by the OCR benchmarks published in
+[`finebooks/bhl-ocr-eval`](https://github.com/finebooks/bhl-ocr-eval), which scores OCR engines on
+pages from the [Biodiversity Heritage Library](https://www.biodiversitylibrary.org/). That board is
+made up almost entirely of open-weight models the FineBooks team ran themselves. I wanted to know
+two things it does not answer: **how do the closed-weight commercial APIs compare** — Mistral's OCR
+models and Datalab's hosted service, which you cannot self-host and which therefore cannot join that
+board on its own provenance terms — **and can a good model be run locally**, on a laptop, without a
+GPU cluster.
+
+So there are six rows here. Four are hosted APIs (`mistral-ocr-2512`, `mistral-ocr-4-1`, and
+Datalab in two configurations), one is `surya-ocr-2` served locally on an M1 Pro, and one is
+`tesseract-5` — which is on the published board already, and is here purely so that running it again
+measures how far our numbers drift from theirs. The answers, in short: the commercial APIs are
+competitive but not dominant, the newest one is actively dangerous on this corpus (see the sparse
+column), and yes, a local model works — it just takes 11.4 hours instead of 13 minutes.
+
+Everything is scored through the FineBooks harness itself, unmodified, so the numbers sit on the
+same scale as theirs. Start with [*Where our rows stand*](#where-our-rows-stand) for the results, or
+[docs/at-scale.md](docs/at-scale.md) for what any of this would cost across all 64M BHL pages.
+
+## How it fits together
+
+Producer adapters feed OCR engines into the [FineBooks IMPACT-BHL](https://huggingface.co/datasets/finebooks/bhl-impact-gt)
 evaluation harness.
 
 The harness — [`finebooks/bhl-ocr-eval`](https://github.com/finebooks/bhl-ocr-eval) — is pinned here
@@ -23,6 +45,8 @@ invalidates that comparison, so the pin is the point.
     scorecards/     per-page scorecards from the harness (gitignored)
     provenance/     tracked run-provenance snapshot, copied from runs/ by board.sh
     boards/         leaderboard.json, built from every scorecard at once
+    docs/           surya-local.md — how the local row is produced
+                    at-scale.md    — cost and throughput across all 64M BHL pages
 
 ## The producer contract
 
@@ -169,6 +193,27 @@ folded reading text.
 `pisciumquerelaee00sche` is the hardest volume for *every* engine (surya 0.1341, mistral-2512
 0.1317, datalab 0.1479, tesseract 0.1749) — a 1662 Latin text with long-s throughout, where the GT
 itself is visibly lossy. That is a corpus property, not a model finding.
+
+### Why there is no docling row
+
+Docling is in this benchmark already — as the **ground truth format**, not as a contestant. The GT
+corpus carries a `docling` column holding a `DoclingDocument`, and `benchmark/build_benchmark.py`
+derives `body_text` / `furniture_text` / `regions_json` from it through the harness's own
+`gt_docling.py`. The body-only headline CER *is* the docling BODY layer, so docling is the measuring
+stick rather than a thing being measured.
+
+Beyond that, docling-the-library is a conversion *pipeline*, not an OCR engine: it orchestrates
+layout analysis and delegates recognition to a backend (Tesseract, EasyOCR, RapidOCR) or to a VLM.
+Benchmarking it would really be benchmarking whichever backend was configured — and `tesseract-5` is
+already on the board as that baseline. It does not fit the producer contract above, which is one
+adapter, one engine, one parquet.
+
+The docling team's own VLM *was* evaluated: `ds4sd/SmolDocling-256M-preview` sits at 0.1965, third
+from bottom. Worth noting it scores 2.18 on the sparse column — it does not hallucinate on blanks,
+it just reads content poorly. The real gap is that the board has SmolDocling and not
+[`ibm-granite/granite-docling-258M`](https://huggingface.co/ibm-granite/granite-docling-258M), its
+product-ready successor. Same size class, open weights, and a plausible next row here.
+
 
 ## Interleaved with the published board
 
