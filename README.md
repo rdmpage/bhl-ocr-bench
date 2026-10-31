@@ -9,8 +9,8 @@ models and Datalab's hosted service, which you cannot self-host and which theref
 board on its own provenance terms — **and can a good model be run locally**, on a laptop, without a
 GPU cluster.
 
-So there are six rows here. Four are hosted APIs (`mistral-ocr-2512`, `mistral-ocr-4-1`, and
-Datalab in two configurations), one is `surya-ocr-2` served locally on an M1 Pro, and one is
+So there are seven rows here. Five are hosted APIs (`mistral-ocr-2512`, `mistral-ocr-4-1`, and
+Datalab in three configurations), one is `surya-ocr-2` served locally on an M1 Pro, and one is
 `tesseract-5` — which is on the published board already, and is here purely so that running it again
 measures how far our numbers drift from theirs. The answers, in short: the commercial APIs are
 competitive but not dominant, the newest one is actively dangerous on this corpus (see the sparse
@@ -85,7 +85,7 @@ to 26.93), so filtering them would remove the finding.
 
 ## How long each run took
 
-Five of the six rows carry a wall-clock total. They were not all timed live: the pre-`WallClock`
+Six of the seven rows carry a wall-clock total. They were not all timed live: the pre-`WallClock`
 runs were **recovered on 2026-08-30 from the checkpoint's filesystem timestamps**. The checkpoint is
 append-only and fsynced after every page, so its `st_birthtime` → `st_mtime` span brackets every
 pass that ever wrote to it — which settles the question the earlier back-fill could not answer. An
@@ -101,6 +101,7 @@ was judged on.
 | `mistral-ocr-2512` | *null* (≤ 1,168.5 s) | — | — | 2 workers, hosted | ≥2 passes; span is an upper bound, not a duration |
 | `datalab-balanced-apidefault` | 2,083.1 s (34.7 min) | 3,742 | 0.96 | 12 workers, hosted | recorded; span 2,078.4 s agrees to 0.23% |
 | `datalab-balanced-configured` | 2,233.5 s (37.2 min) | 3,490 | 1.03 | 12 workers, hosted | recorded; span 2,228.7 s agrees to 0.21% |
+| `datalab-lite` | 1,523.4 s (25.4 min) | 5,116 | 0.70 | 12 workers, hosted | recorded live, single pass |
 | `surya-ocr-2` | 41,075.5 s (11.4 h) | 190 | 18.97 | batch 24, M1 Pro MPS | recorded start to finish in one invocation |
 
 Two caveats on the table. **`mistral-ocr-2512` stays null on purpose**: its checkpoint holds 2,170
@@ -175,6 +176,7 @@ eligible: 2,165 pages, 0 producer errors, 0 missing.
 | mistral-ocr-2512 | 0.0862 | 0.0593 | [0.0377, 0.0731] | 0.0564 | 3.10 | 0.9631 | 0.0494 |
 | datalab-balanced-configured | 0.1008 | 0.0630 | [0.0398, 0.0866] | 0.0590 | 4.31 | **0.9703** | 0.0385 |
 | tesseract-5 | 0.0816 | 0.0672 | [0.0419, 0.0843] | 0.0607 | 6.88 | 0.9225 | 0.0859 |
+| datalab-lite | 0.1051 | 0.0802 | [0.0397, 0.1191] | 0.0776 | 2.78 | 0.9510 | 0.0536 |
 | datalab-balanced-apidefault | 0.2070 | 0.1692 | [0.0602, 0.2882] | 0.1375 | 33.58 | 0.9685 | 0.1432 |
 | mistral-ocr-4-1 | 0.3393 | 0.2439 | [0.0722, 0.4615] | 0.0425 | 212.99 | 0.9687 | 0.2186 |
 
@@ -241,6 +243,7 @@ scorer 3.0 / normalizer `2026-07-20a` — which is the entire reason the pin exi
 | **0.0630** | **datalab-balanced-configured** | **0.0590** | **4.31** | **0.9703** | n/a |
 | 0.0642 | tesseract-5 *(published)* | 0.0591 | 5.49 | 0.9210 | 0.00 |
 | **0.0672** | **tesseract-5** *(ours)* | **0.0607** | **6.88** | **0.9225** | 0.00 |
+| **0.0802** | **datalab-lite** | **0.0776** | **2.78** | **0.9510** | n/a |
 | **0.1692** | **datalab-balanced-apidefault** | **0.1375** | **33.58** | **0.9685** | n/a |
 | 0.1965 | ds4sd/SmolDocling-256M-preview | 0.1946 | 2.18 | 0.8519 | 5.31 |
 | **0.2439** | **mistral-ocr-4-1** | **0.0425** | **212.99** | **0.9687** | n/a |
@@ -337,6 +340,8 @@ like-for-like, and the difference is a measurement artefact, not a quality findi
     uv run producers/datalab.py --limit 5 --out runs/datalab-smoke/run.parquet
     uv run producers/datalab.py --mode balanced --workers 12 --rpm 190 \
         --out runs/datalab-balanced/run.parquet
+    uv run producers/datalab.py --mode lite --workers 12 --rpm 190 \
+        --out runs/datalab-lite/run.parquet
 
 Bespoke multipart `/api/v1/convert`, **asynchronous** (submit returns a `request_check_url` to
 poll), so `run_openai.py` cannot drive it. Two undocumented details cost a smoke run to find:

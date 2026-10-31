@@ -54,6 +54,7 @@ ROWS=(
   "mistral-ocr-2512|mistral-ocr-2512|--model-col model"
   "datalab-balanced-apidefault|datalab-balanced|--model datalab-balanced-apidefault"
   "datalab-balanced-configured|datalab-balanced-configured|--model-col model"
+  "datalab-lite|datalab-lite|--model-col model"
   "surya-ocr-2|surya-ocr-2|--model-col model"
 )
 

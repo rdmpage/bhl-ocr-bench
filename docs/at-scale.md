@@ -18,6 +18,7 @@ hallucination live. Do not plan to self-host: `surya-ocr-2` at our measured rate
 
 | engine / tier | $/1k pages | 64M pages |
 |---|---:|---:|
+| Datalab convert, lite — benchmarked as `datalab-lite` (price as quoted 2026-10-31, unconfirmed) | 0.50 | **$32,000** |
 | Google Document AI OCR, volume (>5M/mo) | 0.60 | **$38,400** |
 | AWS Textract `DetectDocumentText`, volume tier | 0.60 | **$38,400** |
 | Mistral OCR 3 / 25.12-era, Batch API | 1.00 | **$64,000** |
@@ -41,6 +42,7 @@ extrapolated to 64M pages at the same concurrency:
 |---|---:|---:|
 | `mistral-ocr-4-1` | 10,022 pages/h @ 8 workers | 6,387 h — **0.7 years** |
 | `tesseract-5` | 9,115 pages/h @ 7 workers, local CPU | 7,022 h — **0.8 years** |
+| `datalab-lite` | 5,116 pages/h @ 12 workers, 190 rpm cap | 12,510 h — **1.4 years** |
 | `datalab-balanced` | 3,742 pages/h @ 12 workers, 190 rpm cap | 17,105 h — **2.0 years** |
 | `surya-ocr-2` | 190 pages/h @ batch 24, M1 Pro | 337,289 h — **38.5 years** |
 
@@ -62,6 +64,7 @@ Characters emitted per near-empty page, against a reference of ~1.4 characters:
 
 | row | chars/page emitted on sparse pages | sparse CER | over-extraction |
 |---|---:|---:|---:|
+| `datalab-lite` | 1.8 | 2.78 | 0.8437 |
 | `surya-ocr-2` | 3.1 | 2.64 | 0.7011 |
 | `datalab-balanced-configured` | 3.7 | 4.31 | 0.6469 |
 | `mistral-ocr-2512` | 4.9 | 3.10 | 0.7452 |
@@ -89,7 +92,7 @@ paid stream.
 - Removes the hallucination exposure entirely, because the pages you drop are precisely the ones
   every engine fails on.
 - Leaves ~51M content pages to route to a batch-API tier, where the engines actually agree
-  (five of six rows sit in a 0.059–0.067 content band).
+  (five of seven rows sit in a 0.059–0.067 content band; `datalab-lite` is outside it at 0.0776).
 
 Then budget for what the table above leaves out: **egress**. 64M images at ~1 MB each is ~64 TB
 moving into whichever cloud. Unless the scans already live there, that can exceed the OCR bill.

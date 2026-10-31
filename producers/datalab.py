@@ -3,6 +3,7 @@
     export DATALAB_API_KEY=...            # or write it to ~/.config/datalab/api_key
     uv run producers/datalab.py --limit 5 --out runs/datalab-smoke/run.parquet
     uv run producers/datalab.py --mode balanced --out runs/datalab-balanced/run.parquet
+    uv run producers/datalab.py --mode lite --out runs/datalab-lite/run.parquet
 
 Bespoke again — `multipart/form-data` in, structured JSON out — so `run_openai.py` cannot drive
 it, for the same reason Mistral could not. Two things differ from the Mistral adapter and both
@@ -260,7 +261,10 @@ def main() -> None:
     ap.add_argument("--split", default="train")
     ap.add_argument("--id-column", default="PageID")
     ap.add_argument("--image-column", default="image")
-    ap.add_argument("--mode", default="balanced", choices=("fast", "balanced", "accurate"))
+    ap.add_argument("--mode", default="balanced",
+                    choices=("lite", "fast", "balanced", "accurate"),
+                    help="lite is CPU-only OCR with no LLM passes ($0.50 per 1,000 pages); "
+                         "the others are progressively heavier")
     ap.add_argument("--image-captions", action="store_true", default=False,
                     help="let the engine write AI-generated figure descriptions into the markdown. "
                          "OFF by default: they are not transcription, and on this corpus they were "
